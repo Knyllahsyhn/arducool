@@ -35,6 +35,8 @@ This project uses an Arduino Nano to control two pumps and one fan based on temp
    - `Sensor.*`: Beta-NTC reading & exponential smoothing  
    - `Actuator.*`: Base class with hysteresis, separate normal/benchmark curves  
    - `Pump.*` & `Fan.*`: Specializations for pumps (kickstart) and fans
+7. **Output on 128x64 SSD1306 OLED Display**
+   - Displays temperatures of `sensor1` and `sensor2`, PWM Values of `pump1`, `pump2` and `fan1`, `Benchmark Mode (BM)`
 
 ---
 
@@ -60,8 +62,10 @@ An example folder layout (Arduino IDE / PlatformIO style):
 4. **Benchmark button** on Pin 4 (`INPUT_PULLUP`); toggles the advanced mode.  
 5. **Onboard LED** (Pin 13) as an indicator for benchmark mode.  
 6. **MOSFET drivers** for pumps and fan.
+7. **SSD1306** 128x64 OLED Display (SCL - A5, SDA - A4)
 
-![image](https://github.com/user-attachments/assets/fc299ae5-d2fb-4789-9afa-03acfe1a1893)
+![Untitled Sketch_Schaltplan](https://github.com/user-attachments/assets/3d93944c-8488-4729-bf87-16d31e0ad469)
+
 ---
 
 ## Workflow / Logic
@@ -100,66 +104,24 @@ An example folder layout (Arduino IDE / PlatformIO style):
 ## Quick Example (Main Sketch Snippet)
 
 ```cpp
-// PumpController.ino
-#include "Timers.h"
-#include "Sensor.h"
-#include "Pump.h"
-#include "Fan.h"
-
-const int sensor1Pin = A0;
-const int sensor2Pin = A1;
-const int pump1Pin   = 9;
-const int pump2Pin   = 10;
-const int fanPin     = 3;
-const int benchmarkButtonPin = 4;
-const int ledPin             = 13;
-
-
-bool benchmarkMode = false;  // Toggled by a push button
-
-// Normal + Benchmark Hysteresis for a Pump
-ActuatorHysteresis pumpNormalHyst = {25.0f, 20.0f};
-ActuatorHysteresis pumpBenchHyst  = {15.0f, 10.0f};
-
-// Normal + Benchmark Curves
-ActuatorCurve pumpNormalCurve = {25.0f, 60.0f, 85, 128};
-ActuatorCurve pumpBenchCurve  = {25.0f, 60.0f, 85, 230};
-
-// Pump #1 with kickstart (2s at full PWM)
-Pump pump1(sensor1, 9,
-           pumpNormalHyst, pumpNormalCurve,
-           pumpBenchHyst,  pumpBenchCurve,
-           2000, 255);
-
-// Fan #1
-ActuatorHysteresis fanNormalHyst = {25.0f, 20.0f};
-ActuatorHysteresis fanBenchHyst  = {20.0f, 15.0f};
-
-ActuatorCurve fanNormalCurve = {25.0f, 60.0f, 0, 255};
-ActuatorCurve fanBenchCurve  = {20.0f, 60.0f, 0, 255};
-
-Fan fan1(sensor2, 3,
-         fanNormalHyst, fanNormalCurve,
-         fanBenchHyst,  fanBenchCurve);
-
-void setup() {
-  Serial.begin(9600);
-  initTimers25kHz();
-  // ... pins, etc.
-}
-
 void loop() {
-  // 1) Read buttons, toggle benchmarkMode if needed
-  // 2) Non-blocking timing every 500ms:
-  sensor1.update();
-  sensor2.update();
+  
+  unsigned long now = millis();
+  if ((now - lastControlTime) >= controlInterval) {
+    lastControlTime = now;
+    handleBenchmarkButton();
+    if(now - lastDisplayTime >= displayInterval) {
+    lastDisplayTime = now;
+    displayMgr.update(); // Schreibt Sensor/Pump/Fan-Werte aufs OLED
+  }
 
-  pump1.update(benchmarkMode);
-  fan1.update(benchmarkMode);
 
-  Serial.print(F("Pump1 PWM="));
-  Serial.println(pump1.getCurrentPWM());
-  // ...
+    sensor1.update();
+    sensor2.update();
+
+    pump1.update(benchmarkMode);
+    pump2.update(benchmarkMode);
+    fan1.update(benchmarkMode);
 }
 ```
 ---
