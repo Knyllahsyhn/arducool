@@ -1,108 +1,139 @@
-# Arduino-basierte Pumpen- und Lüftersteuerung mit 25 kHz PWM
+# Arduino-basierte Pumpen- und Lüftersteuerung (OOP & 25 kHz PWM)
 
-Dieses Projekt steuert mithilfe eines Arduino Nano und MOSFETs zwei Pumpen und eine Lüftergruppe basierend auf Temperaturmessungen. Die Temperaturmessung erfolgt über zwei 10k-NTC-Sensor (im Spannungsteiler) und die Umrechnung auf °C über die Beta-Formel. Die PWM-Ausgänge sind auf eine Frequenz von etwa 25 kHz eingestellt, um störende Pfeifgeräusche zu minimieren. Außerdem wird auf blockierendes `delay()` verzichtet und stattdessen eine nicht-blockierende Zeitsteuerung mittels `millis()` verwendet.
+In diesem Projekt wird ein Arduino Nano (oder ein vergleichbarer ATmega328p‐basiertes Board) verwendet, um zwei Pumpen und einen Lüfter auf Basis von Temperaturmessungen zu steuern. Die Steuerung ist **objektorientiert** aufgebaut, verwendet **25 kHz PWM** (um Pfeifgeräusche zu vermeiden) und arbeitet nicht‐blockierend über `millis()` statt `delay()`.
 
----
+**Highlights**:
 
-## Features
-
-- Mosfets für beispielsweise **Zwei Pumpen** (Pumpe1 & Pumpe2) und **eine Lüftergruppe**, jeweils mit PWM geregelt.
-- **25 kHz PWM** auf den Ausgängen (Pins 9, 10 und 3), umgesetzt über direkte Register-Manipulation (Timer1 & Timer2).
-- **Temperaturmessung** mittels 10k NTC und Beta-Formel zur Umrechnung in °C.
-- **Geglättete Messwerte** (Exponential Moving Average) für stabileres Regelverhalten.
-- **Nicht-blockierende** Zeitsteuerung mithilfe von `millis()`.
-- **Benchmark-Modus** (via Schalter): steilere PWM-Kennlinien und höheres Maximum.
-- **Hysterese** beim Ein- und Ausschalten (z.B. Pumpe2: EIN >20 °C, AUS <15 °C).
-- **Einfach anpassbare** Temperaturgrenzen und PWM-Bereiche im Code.
+- **Zwei Pumpen** mit Ein/Aus‐Hysterese und Kickstart (damit sie sicher anlaufen)  
+- **Lüfter** mit linearer Temperatur‐PWM‐Kennlinie  
+- **NTC-Temperatursensoren** (10k) mit **Beta‐Formel** und Exponential‐Glättung  
+- **Benchmarkmodus** per Taster, um steilere Kennlinien und höhere PWM‐Maxima zu aktivieren  
+- **Objektorientierte** Struktur (Klassen `Pump`, `Fan`, `Sensor`, plus `Timers`‐Modul)  
+- **Aufteilung** in mehrere `.h/.cpp`‐Dateien für bessere Wartbarkeit  
+- Keine blockierenden `delay()`‐Aufrufe; stattdessen Zeitsteuerung per `millis()`  
 
 ---
 
-## Hardware
+## Inhaltsverzeichnis
 
-1. **Arduino Nano** oder kompatibles Board (ATmega328p).
-2. **NTC-Sensor** (10 kΩ, Beta z.B. 3950) in einem Spannungsteiler mit einem festen 10-kΩ-Widerstand.
-3. **MOSFETs** oder geeignete Treiberstufe (z.B. IRLZ44N), um spannungsgeregelte Pumpen und Lüfter mit PWM anzusteuern.  
-4. **Pumpen** (2x) und **Lüfter** (1x) entsprechend deiner Anwendung.
-5.**Benchmark-Schalter** (einfacher Taster/Schalter gegen GND mit Pullup).
-
-### Verschaltung (Beispiel)
-
-- **Sensor1** an A0 (NTC-Spannungsteiler).
-- **Sensor2** an A1 (NTC-Spannungsteiler).
-- **Pumpe1** (MOSFET-Gate) an Pin 9 (OC1A).
-- **Pumpe2** (MOSFET-Gate) an Pin 10 (OC1B).
-- **Lüfter** (MOSFET-Gate) an Pin 3 (OC2B).
-- **Benchmark-Schalter** an Pin 4 (digital, INPUT_PULLUP).
-- Gemeinsame Masse aller Komponenten.
+1. [Projektstruktur](#projektstruktur)  
+2. [Hardware-Setup](#hardware-setup)  
+3. [Funktionsweise](#funktionsweise)  
+4. [Installation / Kompilierung](#installation--kompilierung)  
+5. [Anpassungen](#anpassungen)  
+6. [Lizenz](#lizenz)
 
 ---
 
-## Software / Code
+## Projektstruktur
 
-### Installation
+Ein möglicher Aufbau der Dateien (Arduino‐typisch):
 
-1. **Arduino IDE** oder PlatformIO installieren.  
-2. Projektdateien (z.B. `Pumpen_Luefter_Steuerung.ino`) in ein Verzeichnis legen.  
-3. Gegebenenfalls die **NTC-Konstante** (Beta, R0) und den festen Widerstandwert in der `readNTCTemp_Beta()`-Funktion anpassen.  
-4. Sicherstellen, dass der Code für einen **Arduino Nano** (ATmega328p) kompiliert wird (Board-Einstellungen).
 
-### Wichtige Code-Bereiche
 
-- **`initTimers25kHz()`**: Setzt Timer1 und Timer2 so, dass die PWM-Ausgänge mit ~25 kHz laufen.  
-- **`readNTCTemp_Beta()`** (oder ähnlich): Implementiert die Beta-Formel für den NTC.  
-- **`mapTemperatureToPWM()`**: Wandelt die gemessene Temperatur in einen PWM-Wert um (0..255), der später auf 0..79 skaliert wird, da der Timer im Fast-PWM-Modus mit `ICR1=79` bzw. `OCR2A=79` arbeitet.  
-- **`loop()`**: Enthält die nicht-blockierende Zeitsteuerung mit `millis()`. Alle `controlInterval` Millisekunden wird die Temperatur gemessen, gefiltert und anschließend die PWM-Werte für Pumpen und Lüfter berechnet.  
-- **Hysterese**: Für Pumpe2 wird beispielsweise `pump2IsOn` genutzt, um nur bei Überschreiten einer bestimmten Temperatur ein- und bei Unterschreiten wieder auszuschalten.
+
+
+> **Hinweis**: Im Sketch werden die Klassen **`Sensor`**, **`Pump`** und **`Fan`** instanziert und im Haupt‐Loop via `update()` aufgerufen.
+
+---
+
+## Hardware-Setup
+
+- **Arduino Nano** (ATmega328p), 5V.  
+- **Temperatursensor**: 10k NTC in einem Spannungsteiler mit 10k Festwiderstand. Die analogen Eingänge (`A0`, `A1`) messen die Spannung über dem NTC.  
+- **MOSFET‐Treiber** (oder geeignete Schaltstufe) an den PWM-Pins:  
+  - **Pumpe1** an **Pin 9** (OC1A)  
+  - **Pumpe2** an **Pin 10** (OC1B)  
+  - **Lüfter** an **Pin 3** (OC2B)  
+  - Alle drei Pins liefern ~25 kHz PWM.  
+- **Hauptschalter** an **Pin 2** (digital, `INPUT_PULLUP`), schaltet das System ein/aus.  
+- **Benchmark‐Taster** an **Pin 4** (digital, `INPUT_PULLUP`), toggelt den Modus bei jedem Druck.  
+- **Onboard-LED** (Pin 13) als Indikator für den Benchmarkmodus (einfaches `digitalWrite(13, HIGH/LOW)`).
+
+---
+
+## Funktionsweise
+
+1. **Timer-Konfiguration**  
+   - In `Timers.cpp` wird **Timer1** (für Pins 9 & 10) und **Timer2** (für Pin 3) auf ~25 kHz eingestellt, anstatt der Standard-Arduino-Frequenz (490/980 Hz).  
+   - Eine Hilfsfunktion `setPWM_25kHz(pin, value)` nimmt 0..255 entgegen und skaliert intern auf 0..79, um in den Compare-Registern die Duty Cycle einzustellen.
+
+2. **NTC-Sensor (Beta‐Formel + Glättung)**  
+   - Klasse `Sensor` in `Sensor.cpp`.  
+   - Konvertiert `analogRead()` mithilfe der Beta‐Gleichung in °C.  
+   - Exponential Moving Average verhindert Sprünge und Rauschen.
+
+3. **Pumpen (Hysterese & Kickstart)**  
+   - Klasse `Pump` in `Pump.cpp`.  
+   - Jede Pumpe hat:  
+     - **Ein-/Ausschalt-Grenzen** (`onThreshold`, `offThreshold`).  
+     - **Kickstart**: Bei Einschalten wird kurzzeitig ein hoher PWM-Wert (z.B. 100%) angelegt, um sicher anzulaufen.  
+     - Danach eine **lineare Temperatur‐zu‐PWM‐Kurve** (z.B. 25..60 °C → 33..50% oder bis 90% im Benchmarkmodus).
+
+4. **Lüfter**  
+   - Klasse `Fan` in `Fan.cpp`.  
+   - Einfacher: 25..60 °C → 0..255 PWM (oder beliebige andere Kennlinie).
+
+5. **Benchmarkmodus**  
+   - Per Taster toggelbar.  
+   - Erhöht z.B. bei den Pumpen das PWM‐Maximum (z.B. von 50% auf 90%).  
+   - Onboard-LED (Pin 13) zeigt an, ob Benchmarkmodus **aktiv** ist.
+
+6. **Hauptschalter**  
+   - Schaltet das gesamte System ab (alle PWM = 0).
+
+---
+
+## Installation / Kompilierung
+
+1. **Arduino IDE** (oder PlatformIO) installieren.  
+2. Dieses Repository (mit allen `.h`/`.cpp`‐Dateien) herunterladen.  
+3. Im Arduino IDE die **Datei `Pumpensteuerung.ino`** öffnen.  
+4. **Board** auf "Arduino Nano" einstellen (ATmega328P).  
+5. **Kompliliere** und **lade hoch**.  
+
+**Wichtig**:  
+- Im Code erwarten wir **5V** Betrieb und `analogRead()` als Spannungsmessung für den NTC. Bei 3.3V‐Systemen müssen ggf. die Formeln und Parameter angepasst werden.  
+- Prüfe in `Sensor.cpp` die Beta‐Konstante und Widerstandswerte (`R_FIXED`, `R0`) für deinen konkreten NTC.
 
 ---
 
 ## Anpassungen
 
-1. **Temperaturschwellen** (`T_PUMP_START_NORMAL`, `T_FAN_START`, etc.) lassen sich frei wählen.  
-2. **PWM-Min/Max** kann man im Code (`PUMP_MIN_PWM_NORMAL`, `PUMP_MAX_PWM_NORMAL`, etc.) anpassen, je nachdem, welche Leistung benötigt wird.  
-3. **Beta-Parameter** des NTC (z.B. 3950) und der Widerstandswert `R_fixed` (z.B. 10 kΩ) müssen übereinstimmen.  
-4. **Glättungsfaktor** `alpha` bestimmt, wie stark die Messwerte geglättet werden. Niedriger Wert = sehr träge, hoher Wert = weniger Filterung.
+1. **Temperaturschwellen**  
+   - `onThreshold` / `offThreshold` pro Pumpe in deren Konstruktor.  
+   - `mapTemperature(...)` in `Pump.cpp` oder `Fan.cpp` kann Start/End‐Temperaturen und PWM-Min/Max anpassen.
+
+2. **Kickstart**  
+   - Dauer und Kickstart‐PWM sind Konstruktor‐Parameter der `Pump`. Ändere sie für deine Hardware.
+
+3. **Benchmarkmodus**  
+   - Aktuell werden in `Pump` nur andere Obergrenzen (z.B. 230 statt 128) verwendet. Du kannst auch andere Kennlinien definieren oder den Lüfter im Benchmarkmodus ändern.
+
+4. **Frequenz**  
+   - Für 25 kHz verwenden wir `TOP=79` und Prescaler=8. Wenn du mehr PWM‐Auflösung (z.B. TOP=255) brauchst, sinkt die Frequenz entsprechend.
+
+5. **Mehr Pumpen**  
+   - Einfach weitere `Pump`‐Objekte (z.B. `pump3`) anlegen, Sensor zuweisen, Pin angeben, im Loop aufrufen.
+
+6. **Struktur**  
+   - Du kannst bei Bedarf jede Klasse (`Sensor`, `Pump`, `Fan`) weiter verfeinern (z.B. Vererbung), falls du z.B. gemeinsame Basisklassen für Aktoren möchtest.
 
 ---
 
-## Bekannte Einschränkungen
+## Lizenz
 
-- Auflösung der PWM ist auf **0..79** (entspricht ~6,3 Bit) reduziert, da wir für 25 kHz einen kleinen TOP-Wert gewählt haben. Für die meisten Anwendungen ist das ausreichend.  
-- Die Beta-Formel ist genauer als eine simple Linear-Skalierung, aber für perfekte Genauigkeit wäre eine **Steinhart-Hart**-Gleichung noch präziser.  
-- Nur **Pin 3** (OC2B) kann für Timer2 bei 25 kHz frei geregelt werden. **Pin 11** ist in diesem Modus belegt als „TOP“-Register-Ausgang und steht nicht für Duty-Cycle zur Verfügung.
+Gnu GPLv3
 
----
-
-## Verwendung / Workflow
-
-1. **Sketch** per Arduino IDE / PlatformIO kompilieren und auf den Nano hochladen.  
-2. **Hardware** korrekt verdrahten (NTC-Spannungsteiler, MOSFETs, Schalter, Pumpe, Lüfter).  
-3. **Hauptschalter** einschalten → Arduino beginnt zu messen und regeln.  
-4. **Benchmarkmodus** testen, indem du den entsprechenden Schalter betätigst. Dies erhöht die PWM-Obergrenze für beide Pumpen und kann die Lüfterkennlinie anpassen (je nach Code).  
-5. **Temperatur simulieren** (z.B. Fühler erwärmen), um die Regelung zu testen. Mit dem seriellen Monitor kannst du Debug-Meldungen über `Serial.print()` auslesen (Temperature, PWM-Werte etc.).
-
----
-
-##To do
-
-1. Integration eines I2C-Displays und Ausgabe relevanter Werte
-2. Vernünftige Branching-Strategie anlegen
-3. Code aufräumen
-4. Schönen Schaltplan basteln
-
-## Lizenz und Haftungsausschluss
-
-GNU GPLv3
-
-
-Diese Schaltung und Software ist ein Beispielprojekt. Für Schäden durch unsachgemäßen Gebrauch oder abweichende Hardwarekonfigurationen wird keine Haftung übernommen. Bitte teste die Schaltung sorgfältig und stelle sicher, dass die MOSFETs, Spannungsversorgung und Verdrahtung für deine Lasten geeignet sind.
 
 ---
 
 ## Kontakt
 
-Fragen, Vorschläge oder Probleme? Erstelle bitte ein [GitHub Issue](https://github.com/Knyllahsyhn/arducool/issues) oder melde dich direkt per E-Mail.  
+Bei Fragen oder Anmerkungen:  
+- **Issues** erstellen  
+- oder eine E-Mail  
 
-Viel Spaß beim Bauen und Experimentieren!
+Viel Erfolg und Spaß beim Experimentieren!  
 
 
