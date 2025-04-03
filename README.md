@@ -118,7 +118,7 @@ In diesem Projekt wird ein Arduino Nano (oder ein vergleichbarer ATmega328p‐ba
 
 ## Lizenz
 
-Gnu GPLv3
+GNU GPLv3
 
 
 ---
@@ -126,8 +126,7 @@ Gnu GPLv3
 ## Kontakt
 
 Bei Fragen oder Anmerkungen:  
-- **Issues** erstellen  
-- oder eine E-Mail  
+- **Issues** erstellen 
 
 Viel Erfolg und Spaß beim Experimentieren!  
 
