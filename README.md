@@ -48,6 +48,8 @@ In diesem Projekt wird ein Arduino Nano (oder ein vergleichbarer ATmega328p‐ba
 - **Benchmark‐Taster** an **Pin 4** (digital, `INPUT_PULLUP`), toggelt den Modus bei jedem Druck.  
 - **Onboard-LED** (Pin 13) als Indikator für den Benchmarkmodus (einfaches `digitalWrite(13, HIGH/LOW)`).
 
+![schaltplan](https://pasteboard.co/p4921sfZgbgA.png)
+
 ---
 
 ## Funktionsweise
