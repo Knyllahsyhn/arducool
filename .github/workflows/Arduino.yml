@@ -2,9 +2,7 @@ name: Arduino Sketches
 
 on:
   push:
-    branches: [ "main" ]
   pull_request:
-    branches: [ "main" ]
 
 jobs:
   compile-sketch:
