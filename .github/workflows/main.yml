@@ -1,3 +1,0 @@
-- uses: arduino/compile-sketches@v1
-  with:
-    fqbn: "arduino:avr:nano"
