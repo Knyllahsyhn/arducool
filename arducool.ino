@@ -15,6 +15,7 @@ const int ledPin             = 13;
 // Hysteresen
 ActuatorHysteresis pump1NormalHyst = {0.0f, 0.0f};
 ActuatorHysteresis pump1BenchHyst  = {0.0f, 0.0f};
+ActuatorHysteresis pump2NormalHyst = {20.0f, 15.0f};
 ActuatorHysteresis pump2BenchHyst = {10.0f,5.0f};
 
 ActuatorCurve pump1NormalCurve = {25.0f, 35.0f, 85, 128};
@@ -35,8 +36,8 @@ Pump pump1(
 // Pumpe1
 Pump pump2(
   sensor2, 10,
-  pump1NormalHyst, pump1NormalCurve,
-  pump1BenchHyst,  pump1BenchCurve,
+  pump2NormalHyst, pump1NormalCurve,
+  pump2BenchHyst,  pump1BenchCurve,
   2000,            // Kickstart-Dauer
   255              // Kickstart-PWM
 );
