@@ -16,7 +16,7 @@ const int pump2Pin = 10;  // Timer1, OC1B
 const int fanPin   = 3;   // Timer2, OC2B
 
 // Schalter-Pins
-const int benchmarkSwitchPin = 4; // (3 ist PWM-Ausgang)
+const int benchmarkSwitchPin = 4; 
 
  // Konstanten an deinen NTC anpassen:
   const float B = 3950.0;        // Beta-Koeffizient deines NTC
