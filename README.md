@@ -1,112 +1,106 @@
-# Arduino-basierte Pumpen- und Lüftersteuerung (OOP, 25 kHz PWM, separater Hysterese‐ und Kennlinienmodus)
+# Arduino-Based Pump and Fan Controller (OOP, 25 kHz PWM, Separate Hysteresis & Curves for Normal/Benchmark Mode)
 
-Dieses Projekt steuert mithilfe eines Arduino Nano zwei Pumpen und einen Lüfter auf Basis von Temperaturmessungen. Dabei werden **Hysterese**‐Schaltpunkte, **Kennlinien** (Normal-/Benchmarkmodus) und ein **Kickstart** für Pumpen implementiert. Die PWM-Ausgänge laufen auf **25 kHz**, um störende Pfeifgeräusche zu vermeiden. Der Code ist **objektorientiert** aufgebaut, wodurch Pumpen- und Lüfterlogik modular und leicht erweiterbar sind.
-
----
-
-## Merkmale
-
-1. **Zwei Betriebsmodi**:  
-   - **Normalmodus** mit eigenen Temperaturgrenzen & Kennlinien  
-   - **Benchmarkmodus**: steilere Kennlinien, andere Hysterese für Ein-/Ausschalten, höhere PWM-Werte  
-   - Umschaltbar per Taster (mit LED-Anzeige)
-
-2. **Objektorientierter Aufbau**  
-   - **Basisklasse** `Actuator` verwaltet:  
-     - Zwei Sätze **Hysterese**‐Grenzen (onTemp/offTemp)  
-     - Zwei **Kennlinien** (Normal / Benchmark)  
-     - Ein-/Ausschalten per Hysterese + lineares Mapping von Temperatur zu PWM  
-   - **Pump** erbt von `Actuator` und ergänzt einen **Kickstart** (hoher PWM-Wert für einige Sekunden beim Einschalten)  
-   - **Fan** erbt von `Actuator` (Hysterese & Kennlinien), **ohne** Kickstart
-
-3. **NTC-Temperatursensoren** (Beta-Formel + Exponential‐Glättung)  
-   - Genaue Temperaturberechnung mithilfe der Beta‐Gleichung  
-   - Rauscharm dank gleitendem Mittelwert (EMA)
-
-4. **Nicht-blockierende** Zeitsteuerung  
-   - **Kein** `delay()`, sondern `millis()`-basiertes Abfragen in regelmäßigen Intervallen
-
-5. **25 kHz PWM** auf Pins 9, 10 und 3  
-   - Vermeidet hörbare Pfeifgeräusche  
-   - Implementiert via direkter Timer-Register‐Konfiguration und einer Hilfsfunktion `setPWM_25kHz()`
-
-6. **Modulare Dateien**  
-   - `Timers.*` → 25 kHz PWM  
-   - `Sensor.*` → NTC‐Beta‐Formel & Glättung  
-   - `Actuator.*` → Basisklasse (Hysterese, Kennlinien)  
-   - `Pump.*` und `Fan.*` → Spezialisierungen mit Kickstart (Pump) oder ohne (Fan)
+This project uses an Arduino Nano to control two pumps and one fan based on temperature measurements. It features separate **hysteresis** thresholds, **temperature-to-PWM curves** (for normal and benchmark modes), and a **kickstart** mechanism for pumps. The PWM outputs run at **25 kHz** to avoid audible noise, and the code is organized in an **object-oriented** manner for easy extensibility.
 
 ---
 
-## Projektstruktur
+## Features
 
-Ein mögliches Layout (Arduino IDE / PlatformIO):
+1. **Two Operating Modes**  
+   - **Normal mode**: user-defined on/off thresholds and PWM curves  
+   - **Benchmark mode**: steeper curves, different on/off thresholds, higher maximum PWM  
+   - Toggled via a push button (with an LED indicator on Pin 13)
 
-//kommt noch
+2. **Object-Oriented Design**  
+   - **Base class** `Actuator` handles:  
+     - Two **hysteresis** sets (on/off temperature)  
+     - Two **curves** (normal/benchmark)  
+     - General on/off switching and linear mapping from temperature to PWM  
+   - **Pump** inherits from `Actuator` and adds a **kickstart** period (to ensure reliable spin-up at low PWM values)  
+   - **Fan** inherits from `Actuator` (with no kickstart, but with separate hysteresis and curves if desired)
+
+3. **NTC Temperature Sensors**  
+   - Beta-coefficient calculation for precise °C reading  
+   - **Exponential smoothing** to reduce noise
+
+4. **Non-blocking Loop**  
+   - Uses `millis()`-based timing instead of `delay()`, allowing other tasks to run concurrently
+
+5. **25 kHz PWM** on Pins 9, 10, and 3  
+   - Eliminates annoying audible frequencies  
+   - Implemented via direct timer configuration and a helper function `setPWM_25kHz()`
+
+6. **Modular Files**  
+   - `Timers.*`: Timer setup for 25 kHz PWM  
+   - `Sensor.*`: Beta-NTC reading & exponential smoothing  
+   - `Actuator.*`: Base class with hysteresis, separate normal/benchmark curves  
+   - `Pump.*` & `Fan.*`: Specializations for pumps (kickstart) and fans
 
 ---
 
-## Hardware‐Setup
+## Project Structure
+
+An example folder layout (Arduino IDE / PlatformIO style):
+
+//tba
+
+
+
+
+---
+
+## Hardware Setup
 
 1. **Arduino Nano** (5V, ATmega328p).  
-2. **NTC-Sensoren** (z.B. 10 kΩ, Beta ~3950) in Spannungsteilern.  
-   - Analogeingänge `A0`, `A1` messen die Spannung.  
-3. **PWM-Ausgänge**:  
-   - **Pumpe1** → Pin 9 (OC1A)  
-   - **Pumpe2** → Pin 10 (OC1B)  
-   - **Lüfter** → Pin 3 (OC2B)  
-   - Alle auf ~25 kHz (kein Pfeifen).  
-4. **Hauptschalter** an Pin 2 (digital, `INPUT_PULLUP`).  
-5. **Benchmark‐Taster** an Pin 4 (digital, `INPUT_PULLUP`), toggelt Modus.  
-6. **Onboard‐LED** (Pin 13) als Aktivitätsanzeige für den Benchmarkmodus.  
-7. **MOSFETs** oder Treiber‐Stufe zum Ansteuern von Pumpen und Lüfter.
+2. **10 kΩ NTC sensors** (Beta ~3950) in voltage divider circuits, analog inputs (`A0`, `A1`).  
+3. **PWM outputs** (25 kHz):  
+   - **Pump1** → Pin 9 (OC1A)  
+   - **Pump2** → Pin 10 (OC1B)  
+   - **Fan** → Pin 3 (OC2B)   
+4. **Benchmark button** on Pin 4 (`INPUT_PULLUP`); toggles the advanced mode.  
+5. **Onboard LED** (Pin 13) as an indicator for benchmark mode.  
+6. **MOSFET drivers** for pumps and fan.
 
 ![image](https://github.com/user-attachments/assets/fc299ae5-d2fb-4789-9afa-03acfe1a1893)
-
 ---
 
-## Ablauf / Funktionsweise
+## Workflow / Logic
 
-1. **Timer‐Init**  
-   - `initTimers25kHz()` (in `Timers.cpp`) stellt Timer1 (Pins 9,10) und Timer2 (Pin 3) auf eine ~25 kHz PWM-Frequenz.
+1. **Timer Configuration**  
+   - `initTimers25kHz()` sets Timer1 (Pins 9,10) and Timer2 (Pin 3) to ~25 kHz instead of default Arduino PWM frequencies.
 
 2. **Sensor**  
-   - `Sensor`‐Klasse (`Sensor.cpp`) liest den ADC‐Wert, rechnet ihn via Beta-Formel in °C um und glättet das Ergebnis.
+   - `Sensor` class reads ADC, converts to Celsius via the Beta equation, and smooths the result with exponential moving average.
 
-3. **Basisklasse `Actuator`**  
-   - Hält zwei Paare **Hysterese** (normal / benchmark) und zwei **Kennlinien** (normal / benchmark).  
-   - `update(bool benchmarkMode)` prüft den Ein-/Aus‐Zustand via Hysterese, mappt Temperatur linear auf PWM und ruft `postProcessPWM()` auf.
+3. **`Actuator` Base Class**  
+   - Manages two sets of **hysteresis** (normal/benchmark) and two temperature->PWM curves.  
+   - `update(bool benchmarkMode)` checks if the actuator should switch on or off, maps temperature linearly to PWM, then calls `postProcessPWM()`.
 
-4. **`Pump`** (abgeleitet von `Actuator`)  
-   - Implementiert **Kickstart** in `postProcessPWM()`: Bei Einschalten wird für eine definierte Zeit (z.B. 1–2 s) ein hoher PWM‐Wert erzwungen, um ein Stehenbleiben zu vermeiden.
+4. **`Pump`** (Inherits from `Actuator`)  
+   - Implements a **kickstart** in `postProcessPWM()`, forcing a high PWM for a set duration to ensure the pump starts spinning reliably.
 
-5. **`Fan`** (abgeleitet von `Actuator`)  
-   - Braucht ggf. **keinen** Kickstart.  
-   - Kann trotzdem andere Hysterese- und Kennlinieneinstellungen im Benchmarkmodus erhalten.
+5. **`Fan`** (Inherits from `Actuator`)  
+   - Shares the same base hysteresis/curve mechanism but typically has no kickstart.
 
-6. **Benchmarkmodus**  
-   - Taster toggelt ein globales `benchmarkMode`‐Flag.  
-   - Aktoren wählen dann die **Benchmark‐Hysterese** (z.B. tiefere Ein-/Ausschalt‐Temperaturen) und die **steilere Kennlinie** (höhere pwmHigh).
+6. **Benchmark Mode**  
+   - Toggled by a button.  
+   - Uses different on/off thresholds and steeper PWM curves (e.g., higher maximum PWM).  
+   - LED on Pin 13 indicates whether benchmark mode is active.
 
-7. **Nicht-blockierend**  
-   - `loop()` nutzt ein Zeitintervall (`millis()`), um alle X ms (`sensor.update()`, `pump.update()`, `fan.update()`) auszuführen. Keine `delay()`‐Aufrufe.
----
+7. **Non-blocking Loop**  
+   - The main `loop()` uses `millis()` checks to call `update()` for sensors and actuators at fixed intervals (e.g., every 500 ms).  
+   - No calls to `delay()` are used, so the system remains responsive.
 
-## Installation und Verwendung
-
-1. **Arduino IDE** oder PlatformIO installieren.  
-2. Alle `.h`/`.cpp`‐Dateien in einen Projektordner kopieren.  
-3. In der **Hauptdatei** `arducool.ino` sicherstellen, dass Board/Port korrekt gewählt sind.  
-4. Kompilieren und hochladen.  
-5. **Hardware** gemäß obiger Pinbelegung anschließen.    
-7. **Benchmark‐Taster** drücken → Modus wechselt, LED geht an/aus; steilere Kennlinien und andere Hysterese greifen.
+8. **Memory Optimization**  
+   - Large `float` usage from Beta-equation calls can be replaced with simpler approximations if desired.  
+   - Debug strings can be stored in Flash using the `F()` macro to save RAM.
 
 ---
 
-## Beispielcode (Ausschnitt)
+## Quick Example (Main Sketch Snippet)
 
 ```cpp
-// Hauptsketch (Pumpensteuerung.ino)
+// PumpController.ino
 #include "Timers.h"
 #include "Sensor.h"
 #include "Pump.h"
@@ -121,28 +115,28 @@ const int benchmarkButtonPin = 4;
 const int ledPin             = 13;
 
 
-// Taster-Flag
-bool benchmarkMode = false;
+bool benchmarkMode = false;  // Toggled by a push button
 
-// Hysteresen & Kennlinien definieren
+// Normal + Benchmark Hysteresis for a Pump
 ActuatorHysteresis pumpNormalHyst = {25.0f, 20.0f};
 ActuatorHysteresis pumpBenchHyst  = {15.0f, 10.0f};
 
-ActuatorCurve pumpNormalCurve     = {25.0f, 60.0f, 85, 128};
-ActuatorCurve pumpBenchCurve      = {25.0f, 60.0f, 85, 230};
+// Normal + Benchmark Curves
+ActuatorCurve pumpNormalCurve = {25.0f, 60.0f, 85, 128};
+ActuatorCurve pumpBenchCurve  = {25.0f, 60.0f, 85, 230};
 
-// Pumpe1
+// Pump #1 with kickstart (2s at full PWM)
 Pump pump1(sensor1, 9,
            pumpNormalHyst, pumpNormalCurve,
            pumpBenchHyst,  pumpBenchCurve,
-           2000, 255); // Kickstart=2s, PWM=100%
+           2000, 255);
 
-// Fan
-ActuatorHysteresis fanNormalHyst  = {25.0f, 20.0f};
-ActuatorHysteresis fanBenchHyst   = {20.0f, 15.0f};
+// Fan #1
+ActuatorHysteresis fanNormalHyst = {25.0f, 20.0f};
+ActuatorHysteresis fanBenchHyst  = {20.0f, 15.0f};
 
-ActuatorCurve fanNormalCurve      = {25.0f, 60.0f, 0, 255};
-ActuatorCurve fanBenchCurve       = {20.0f, 60.0f, 0, 255};
+ActuatorCurve fanNormalCurve = {25.0f, 60.0f, 0, 255};
+ActuatorCurve fanBenchCurve  = {20.0f, 60.0f, 0, 255};
 
 Fan fan1(sensor2, 3,
          fanNormalHyst, fanNormalCurve,
@@ -150,47 +144,46 @@ Fan fan1(sensor2, 3,
 
 void setup() {
   Serial.begin(9600);
-  pinMode(benchmarkButtonPin, INPUT_PULLUP);
-  pinMode(ledPin, OUTPUT);
-
   initTimers25kHz();
+  // ... pins, etc.
 }
 
 void loop() {
-  // Taster abfragen, benchmarkMode toggeln
-  handleBenchmarkButton();
+  // 1) Read buttons, toggle benchmarkMode if needed
+  // 2) Non-blocking timing every 500ms:
+  sensor1.update();
+  sensor2.update();
 
-  // Zeitgesteuert (z.B. alle 500 ms):
-  if (millis() - lastCheck >= 500) {
-    lastCheck = millis();
+  pump1.update(benchmarkMode);
+  fan1.update(benchmarkMode);
 
-    sensor1.update();
-    sensor2.update();
-
-    pump1.update(benchmarkMode);
-    pump2.update(benchmarkMode);
-    fan1.update(benchmarkMode);
-
-    Serial.print(F("Pump1 PWM="));
-    Serial.print(pump1.getCurrentPWM());
-    Serial.print(F("  Fan1 PWM="));
-    Serial.println(fan1.getCurrentPWM());
-  }
+  Serial.print(F("Pump1 PWM="));
+  Serial.println(pump1.getCurrentPWM());
+  // ...
 }
 ```
 ---
-##Lizenz
+## Installation
+1. Clone or download this repo with all .h/.cpp files.
 
-GNU GPLv3
+2. Open PumpController.ino in Arduino IDE or use PlatformIO.
 
+3. Select "Arduino Nano" and the proper COM port in the IDE.
+
+4. Compile and upload.
+
+5. Wire your hardware as specified (sensors, MOSFET drivers, etc.).
+
+6. Power up and watch the system control the pumps and fan according to the temperatures.
 
 ---
-##Kontakt
+## License
 
-## Kontakt
+GNU GPLv3
+---
+## Contact / Contributions
+Feel free to open an Issue or Pull Request if you have questions or improvements.
 
-Bei Fragen oder Anmerkungen:
+For precise temperature readings, ensure your Beta constant matches your NTC specs.
 
-- **Issues** erstellen
-
-Viel Erfolg und Spaß beim Experimentieren!
+If you need more available memory, see the notes on disabling log() or simplifying the code.
