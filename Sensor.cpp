@@ -45,7 +45,7 @@ float Sensor::readNTCTemp() {
   }
 
   float rNtc = R_FIXED * (vPin / (VCC - vPin));
-  float invT = (1.0f / T0) + (1.0f / B) * log(rNtc / R0);
-  float tKelvin = 1.0f / invT;
+  rNtc = (1.0f / T0) + (1.0f / B) * log(rNtc / R0);
+  float tKelvin = 1.0f / rNtc;
   return (tKelvin - 273.15f);
 }

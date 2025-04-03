@@ -1,3 +1,4 @@
+#include <stdint.h>
 #pragma once
 #include "Actuator.h"
 
@@ -27,7 +28,7 @@ public:
        const ActuatorHysteresis& benchHyst,
        const ActuatorCurve& benchCurve,
        unsigned long kickstartDuration,
-       int kickstartPWM);
+       uint8_t kickstartPWM);
 
 protected:
   /**
@@ -39,5 +40,5 @@ protected:
 
 private:
   unsigned long kickTime;  // Dauer
-  int kickValue;           // PWM während Kickstart
+  uint8_t kickValue;           // PWM während Kickstart
 };
