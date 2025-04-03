@@ -97,7 +97,7 @@ Das Projekt ist modular aufgebaut und in mehrere Dateien unterteilt:
      - [Adafruit GFX](https://github.com/adafruit/Adafruit-GFX-Library)
 
 2. **Projekt herunterladen:**  
-   Klone oder lade dieses Repository herunter und öffne die `Pumpensteuerung.ino` in der Arduino IDE.
+   Klone oder lade dieses Repository herunter und öffne die `arducool.ino` in der Arduino IDE.
 
 3. **Hardware anschließen:**  
    - Verbinde die NTC-Sensoren mit den analogen Eingängen A0 und A1.  
