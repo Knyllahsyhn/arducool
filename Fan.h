@@ -1,26 +1,20 @@
 #pragma once
-#include <Arduino.h>
-#include "Sensor.h"
+#include "Actuator.h"
 
-/**
- * Lüfter-Klasse:
- *  - lineare Kennlinie 25..60°C => 0..255 PWM (Beispiel)
- *  - optional Benchmark-Mode
- */
-class Fan {
+class Fan : public Actuator {
 public:
-  Fan(const Sensor& sensorRef, uint8_t pwmPin);
+  Fan(const Sensor& sensorRef,
+      uint8_t pwmPin,
+      // Normal + Benchmark-Hysterese
+      const ActuatorHysteresis& normalHyst,
+      const ActuatorCurve& normalC,
+      const ActuatorHysteresis& benchHyst,
+      const ActuatorCurve& benchC)
+  : Actuator(sensorRef, pwmPin, normalHyst, normalC, benchHyst, benchC)
+  {}
 
-  // update:
-  //  - benchmarkMode könnte eine andere Kennlinie schalten,
-  //    oder du ignorierst es und fährst immer dieselbe Kurve.
-  void update(bool benchmarkMode);
-  int getCurrentPWM() const;
+protected:
+  void postProcessPWM(int& pwmVal, unsigned long elapsedSinceOn) override {};
 
-private:
-  const Sensor& sensor;
-  uint8_t pin;
-  int pwmVal;
-
-  int mapTemperature(float temp, float tLow, float tHigh, int pwmLow, int pwmHigh);
 };
+ 
