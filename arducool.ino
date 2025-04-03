@@ -59,6 +59,39 @@ bool benchmarkMode = false;
 unsigned long lastControlTime = 0;
 const unsigned long controlInterval = 500;
 
+
+// Taster
+void handleBenchmarkButton() {
+  static int lastButtonState = HIGH;
+  static unsigned long lastDebounceTime = 0;
+  const unsigned long debounceDelay = 50;
+  static int buttonState; // Adjust as needed
+
+  // Read the current state; with INPUT_PULLUP the unpressed state is HIGH.
+  int reading = digitalRead(benchmarkButtonPin);
+
+  // If the button state has changed, reset the debounce timer.
+  if (reading != lastButtonState) {
+    lastDebounceTime = millis();
+  }
+
+  // If the state has been stable for longer than debounceDelay,
+  // then check if we have a falling edge (HIGH -> LOW).
+  if ((millis() - lastDebounceTime) > debounceDelay) {
+    if (reading != buttonState){
+      buttonState=reading;
+      if (buttonState == LOW){
+      benchmarkMode = !benchmarkMode;
+      Serial.print("Benchmark toggled: ");
+      Serial.println(benchmarkMode ? "ON" : "OFF");
+    }
+    }
+  }
+
+  lastButtonState = reading;
+}
+
+
 void setup() {
   Serial.begin(9600);
   pinMode(benchmarkButtonPin, INPUT_PULLUP);
@@ -96,35 +129,6 @@ void loop() {
     pump2.update(benchmarkMode);
     fan1.update(benchmarkMode);
 }
-
-// Taster
-void handleBenchmarkButton() {
-  static int lastButtonState = HIGH;
-  static unsigned long lastDebounceTime = 0;
-  const unsigned long debounceDelay = 50;
-  static int buttonState; // Adjust as needed
-
-  // Read the current state; with INPUT_PULLUP the unpressed state is HIGH.
-  int reading = digitalRead(benchmarkButtonPin);
-
-  // If the button state has changed, reset the debounce timer.
-  if (reading != lastButtonState) {
-    lastDebounceTime = millis();
-  }
-
-  // If the state has been stable for longer than debounceDelay,
-  // then check if we have a falling edge (HIGH -> LOW).
-  if ((millis() - lastDebounceTime) > debounceDelay) {
-    if (reading != buttonState){
-      buttonState=reading;
-      if (buttonState == LOW){
-      benchmarkMode = !benchmarkMode;
-      Serial.print("Benchmark toggled: ");
-      Serial.println(benchmarkMode ? "ON" : "OFF");
-    }
-    }
-  }
-
-  lastButtonState = reading;
 }
+
 
