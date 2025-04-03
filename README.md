@@ -86,7 +86,7 @@ In diesem Projekt wird ein Arduino Nano (oder ein vergleichbarer ATmega328p‐ba
 
 1. **Arduino IDE** (oder PlatformIO) installieren.  
 2. Dieses Repository (mit allen `.h`/`.cpp`‐Dateien) herunterladen.  
-3. Im Arduino IDE die **Datei `Pumpensteuerung.ino`** öffnen.  
+3. Im Arduino IDE die **Datei `arducool.ino`** öffnen.  
 4. **Board** auf "Arduino Nano" einstellen (ATmega328P).  
 5. **Kompliliere** und **lade hoch**.  
 
