@@ -42,7 +42,7 @@ Dieses Projekt steuert mithilfe eines Arduino Nano zwei Pumpen und einen Lüfter
 
 Ein mögliches Layout (Arduino IDE / PlatformIO):
 
-
+//kommt noch
 
 ---
 
@@ -90,11 +90,6 @@ Ein mögliches Layout (Arduino IDE / PlatformIO):
 
 7. **Nicht-blockierend**  
    - `loop()` nutzt ein Zeitintervall (`millis()`), um alle X ms (`sensor.update()`, `pump.update()`, `fan.update()`) auszuführen. Keine `delay()`‐Aufrufe.
-
-8. **Speicheroptimierung**  
-   - Debug‐Ausgaben mit `F()`‐Makro ins Flash verschieben.  
-   - OOP und `log()` (Beta‐Formel) brauchen etwas mehr Flash. Falls nötig, kann man eine einfachere Approximation oder Lookup‐Tabellen verwenden.
-
 ---
 
 ## Installation und Verwendung
