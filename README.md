@@ -118,7 +118,12 @@ In diesem Projekt wird ein Arduino Nano (oder ein vergleichbarer ATmega328p‐ba
    - Bei Bedarf jede Klasse (`Sensor`, `Pump`, `Fan`) weiter verfeinern (z.B. Vererbung), falls z.B. gemeinsame Basisklassen für Aktoren gewünscht. 
 
 ---
+## To do
+1. Kurven anpassen
+2. I2C-Display integrieren
+3. Wiki bauen
 
+---
 ## Lizenz
 
 GNU GPLv3
