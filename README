@@ -1,12 +1,12 @@
 # Arduino-basierte Pumpen- und Lüftersteuerung mit 25 kHz PWM
 
-Dieses Projekt steuert mithilfe eines Arduino Nano zwei Pumpen und einen Lüfter basierend auf Temperaturmessungen. Die Temperaturmessung erfolgt über einen 10k-NTC-Sensor (im Spannungsteiler) und die Umrechnung auf °C über die Beta-Formel. Die PWM-Ausgänge sind auf eine Frequenz von etwa 25 kHz eingestellt, um störende Pfeifgeräusche zu minimieren. Außerdem wird auf blockierendes `delay()` verzichtet und stattdessen eine nicht-blockierende Zeitsteuerung mittels `millis()` verwendet.
+Dieses Projekt steuert mithilfe eines Arduino Nano und MOSFETs zwei Pumpen und eine Lüftergruppe basierend auf Temperaturmessungen. Die Temperaturmessung erfolgt über zwei 10k-NTC-Sensor (im Spannungsteiler) und die Umrechnung auf °C über die Beta-Formel. Die PWM-Ausgänge sind auf eine Frequenz von etwa 25 kHz eingestellt, um störende Pfeifgeräusche zu minimieren. Außerdem wird auf blockierendes `delay()` verzichtet und stattdessen eine nicht-blockierende Zeitsteuerung mittels `millis()` verwendet.
 
 ---
 
 ## Features
 
-- **Zwei Pumpen** (Pumpe1 & Pumpe2) und **ein Lüfter**, jeweils mit PWM geregelt.
+- Mosfets für beispielsweise **Zwei Pumpen** (Pumpe1 & Pumpe2) und **eine Lüftergruppe**, jeweils mit PWM geregelt.
 - **25 kHz PWM** auf den Ausgängen (Pins 9, 10 und 3), umgesetzt über direkte Register-Manipulation (Timer1 & Timer2).
 - **Temperaturmessung** mittels 10k NTC und Beta-Formel zur Umrechnung in °C.
 - **Geglättete Messwerte** (Exponential Moving Average) für stabileres Regelverhalten.
@@ -17,21 +17,13 @@ Dieses Projekt steuert mithilfe eines Arduino Nano zwei Pumpen und einen Lüfter
 
 ---
 
-## Verzeichnisstruktur
-
-
-
-*(Du kannst natürlich die Struktur anpassen, wie du möchtest.)*
-
----
-
 ## Hardware
 
 1. **Arduino Nano** oder kompatibles Board (ATmega328p).
 2. **NTC-Sensor** (10 kΩ, Beta z.B. 3950) in einem Spannungsteiler mit einem festen 10-kΩ-Widerstand.
-3. **MOSFETs** oder geeignete Treiberstufe (z.B. IRLZ44N), um Pumpen und Lüfter mit PWM anzusteuern.  
+3. **MOSFETs** oder geeignete Treiberstufe (z.B. IRLZ44N), um spannungsgeregelte Pumpen und Lüfter mit PWM anzusteuern.  
 4. **Pumpen** (2x) und **Lüfter** (1x) entsprechend deiner Anwendung.
-5. **Hauptschalter** und **Benchmark-Schalter** (jeweils einfacher Taster/Schalter gegen GND mit Pullup).
+5.**Benchmark-Schalter** (einfacher Taster/Schalter gegen GND mit Pullup).
 
 ### Verschaltung (Beispiel)
 
@@ -40,7 +32,6 @@ Dieses Projekt steuert mithilfe eines Arduino Nano zwei Pumpen und einen Lüfter
 - **Pumpe1** (MOSFET-Gate) an Pin 9 (OC1A).
 - **Pumpe2** (MOSFET-Gate) an Pin 10 (OC1B).
 - **Lüfter** (MOSFET-Gate) an Pin 3 (OC2B).
-- **Hauptschalter** an Pin 2 (digital, INPUT_PULLUP).
 - **Benchmark-Schalter** an Pin 4 (digital, INPUT_PULLUP).
 - Gemeinsame Masse aller Komponenten.
 
@@ -68,8 +59,8 @@ Dieses Projekt steuert mithilfe eines Arduino Nano zwei Pumpen und einen Lüfter
 ## Anpassungen
 
 1. **Temperaturschwellen** (`T_PUMP_START_NORMAL`, `T_FAN_START`, etc.) lassen sich frei wählen.  
-2. **PWM-Min/Max** kannst du im Code (`PUMP_MIN_PWM_NORMAL`, `PUMP_MAX_PWM_NORMAL`, etc.) anpassen, je nachdem, welche Leistung du brauchst.  
-3. **Beta-Parameter** deines NTC (z.B. 3950) und der Widerstandswert `R_fixed` (z.B. 10 kΩ) müssen übereinstimmen.  
+2. **PWM-Min/Max** kann man im Code (`PUMP_MIN_PWM_NORMAL`, `PUMP_MAX_PWM_NORMAL`, etc.) anpassen, je nachdem, welche Leistung benötigt wird.  
+3. **Beta-Parameter** des NTC (z.B. 3950) und der Widerstandswert `R_fixed` (z.B. 10 kΩ) müssen übereinstimmen.  
 4. **Glättungsfaktor** `alpha` bestimmt, wie stark die Messwerte geglättet werden. Niedriger Wert = sehr träge, hoher Wert = weniger Filterung.
 
 ---
