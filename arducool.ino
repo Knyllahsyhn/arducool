@@ -4,50 +4,55 @@
 #include "Pump.h"
 #include "Fan.h"
 
-// Pins
 const int sensor1Pin = A0;
 const int sensor2Pin = A1;
 const int pump1Pin   = 9;
 const int pump2Pin   = 10;
 const int fanPin     = 3;
-
 const int benchmarkButtonPin = 4;
 const int ledPin             = 13;
 
-// Erzeuge zwei Sensor-Objekte (NTC-Beta)
-Sensor sensor1(sensor1Pin, 10000.0f, 3950.0f, 10000.0f, 298.15f, 0.1f);
-Sensor sensor2(sensor2Pin, 10000.0f, 3950.0f, 10000.0f, 298.15f, 0.1f);
+// Hysteresen
+ActuatorHysteresis pump1NormalHyst = {0.0f, 0.0f};
+ActuatorHysteresis pump1BenchHyst  = {0.0f, 0.0f};
+ActuatorHysteresis pump2NormalHyst = {20.0f, 15.0f};
+ActuatorHysteresis pump2BenchHyst = {10.0f,5.0f};
 
-// Pumpen anlegen
-// Pump1: EIN>25°C, AUS<20°C, Kickstart=1.5s
-Pump pump1(sensor1,
-           pump1Pin,
-           0.0f,   // onThreshold
-           0.0f,   // offThreshold
-           85,      // pwmMinNormal
-           128,     // pwmMaxNormal
-           230,     // pwmMaxBenchmark
-           2000,    // kickstartDuration
-           255);    // kickstartPWM
+ActuatorCurve pump1NormalCurve = {25.0f, 35.0f, 85, 128};
+ActuatorCurve pump1BenchCurve  = {25.0f, 30.0f, 128, 230};
+// Sensoren
+Sensor sensor1(A0, 10000.0f, 3950.0f, 10000.0f, 298.15f, 0.1f);
+Sensor sensor2(A1, 10000.0f, 3950.0f, 10000.0f, 298.15f, 0.1f);
 
-// Pump2: EIN>20°C, AUS<15°C, Kickstart=2s
-Pump pump2(sensor2,
-           pump2Pin,
-           20.0f,
-           15.0f,
-           85,
-           128,
-           230,
-           2000,
-           255);
+// Pumpe1
+Pump pump1(
+  sensor1, 9,
+  pump1NormalHyst, pump1NormalCurve,
+  pump1BenchHyst,  pump1BenchCurve,
+  2000,            // Kickstart-Dauer
+  255              // Kickstart-PWM
+);
 
-// Lüfter, einfach 25..60°C => 0..255
-Fan fan(sensor2, fanPin);
+// Pumpe1
+Pump pump2(
+  sensor2, 10,
+  pump2NormalHyst, pump1NormalCurve,
+  pump2BenchHyst,  pump1BenchCurve,
+  2000,            // Kickstart-Dauer
+  255              // Kickstart-PWM
+);
 
-// Benchmark-Mode
-static bool benchmarkMode = false;
+// Lsüfter, der ab Normal 30..25°C off, Benchmark 20..15°C off, etc.
+ActuatorHysteresis fanNormalHyst = {25.0f, 22.0f}; // EIN>30, AUS<25
+ActuatorHysteresis fanBenchHyst  = {20.0f, 10.0f}; // ...
+ActuatorCurve fanNormalCurve     = {25.0f, 40.0f, 114, 255};
+ActuatorCurve fanBenchCurve      = {20.0f, 30.0f, 128, 255};
 
-// Debounce
+Fan fan1(sensor2, 3,
+         fanNormalHyst, fanNormalCurve,
+         fanBenchHyst,  fanBenchCurve);
+
+bool benchmarkMode = false;
 static bool lastButtonState = HIGH;
 static unsigned long lastDebounceTime = 0;
 static const unsigned long debounceDelay = 50;
@@ -57,19 +62,18 @@ const unsigned long controlInterval = 500;
 
 void setup() {
   Serial.begin(9600);
-
   pinMode(benchmarkButtonPin, INPUT_PULLUP);
   pinMode(ledPin, OUTPUT);
 
-  // 25 kHz PWM
   initTimers25kHz();
+
   // Alle Kanäle 0
   setPWM_25kHz(pump1Pin, 0);
   setPWM_25kHz(pump2Pin, 0);
   setPWM_25kHz(fanPin,   0);
 }
 
-// Taster, um Benchmark zu togglen
+// Taster
 void handleBenchmarkButton() {
   bool reading = digitalRead(benchmarkButtonPin);
   if (reading != lastButtonState) {
@@ -79,7 +83,7 @@ void handleBenchmarkButton() {
     if (lastButtonState == HIGH && reading == LOW) {
       benchmarkMode = !benchmarkMode;
       digitalWrite(ledPin, benchmarkMode ? HIGH : LOW);
-      Serial.print("Benchmarkmode: ");
+      Serial.print("Benchmark: ");
       Serial.println(benchmarkMode ? "ON" : "OFF");
     }
   }
@@ -87,30 +91,29 @@ void handleBenchmarkButton() {
 }
 
 void loop() {
-  // 1) Taster checken
   handleBenchmarkButton();
 
-  // 2) Zeitgesteuerter Regelzyklus
   unsigned long now = millis();
-  if (now - lastControlTime >= controlInterval) {
+  if ((now - lastControlTime) >= controlInterval) {
     lastControlTime = now;
-    // Sensoren updaten
-    sensor1.update();
-    sensor2.update();
 
-    // Debug
-    Serial.print("T1 = ");
-    Serial.print(sensor1.getTemperature());
-    Serial.print(" | T2 = ");
-    Serial.print(sensor2.getTemperature());
-    Serial.print(" | BM = ");
-    Serial.println(benchmarkMode);
 
-    // Pumpen & Lüfter updaten
-    pump1.update(benchmarkMode);
-    pump2.update(benchmarkMode);
-    fan.update(benchmarkMode);
+  sensor1.update();
+  sensor2.update();
+
+  pump1.update(benchmarkMode);
+  pump2.update(benchmarkMode);
+  fan1.update(benchmarkMode);
+
+    Serial.print("Pump1 PWM=");
+  Serial.print(pump1.getCurrentPWM());
+  Serial.print("  Pump2 PWM=");
+  Serial.print(pump2.getCurrentPWM());
+  Serial.print("  Fan1 PWM=");
+  Serial.print(fan1.getCurrentPWM());
+  Serial.print(" T1 = ");
+  Serial.print(sensor1.getTemperature());
+   Serial.print(" T2 = ");
+  Serial.println(sensor2.getTemperature());
   }
-
-  // Hier weitere nicht-blockierende Aktionen, falls nötig ...
 }
