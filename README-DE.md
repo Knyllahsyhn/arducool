@@ -134,7 +134,7 @@ Das Projekt ist modular aufgebaut und in mehrere Dateien unterteilt:
 
 ## Lizenz
 
-*(Bitte füge hier deine gewünschte Lizenz ein, z.B. MIT, GPL, etc.)*
+GPLv3
 
 ---
 
