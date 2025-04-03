@@ -1,3 +1,4 @@
+#include <stdint.h>
 #pragma once
 #include <Arduino.h>
 #include "Sensor.h"
@@ -6,8 +7,8 @@
 struct ActuatorCurve {
   float TLow;
   float THigh;
-  int pwmLow;
-  int pwmHigh;
+  uint8_t pwmLow;
+  uint8_t pwmHigh;
 };
 
 struct ActuatorHysteresis {
@@ -27,9 +28,10 @@ public:
            const ActuatorCurve& benchCurve);
 
   virtual void update(bool benchmarkMode);
+  virtual void setOff();
 
   // Getter
-  int  getCurrentPWM() const { return currentPWM; }
+  uint8_t  getCurrentPWM() const { return currentPWM; }
   bool isOn()         const { return stateOn;    }
 
 protected:
@@ -45,17 +47,14 @@ protected:
   ActuatorCurve benchCurve;
 
   bool stateOn;     // Ein/Aus
-  int  currentPWM;  // 0..255
+  uint8_t  currentPWM;  // 0..255
 
   // Zeit, wann zuletzt eingeschaltet
   unsigned long lastOnTime;
 
   // Basismethode für lineares Mapping
-  int mapTemperature(float T, const ActuatorCurve& curve);
+  uint8_t mapTemperature(float T, const ActuatorCurve& curve);
 
   // Virtuelle Methode für Post-Processing (z.B. Kickstart)
   virtual void postProcessPWM(int& pwmVal, unsigned long elapsedSinceOn) {}
-
-private:
-  void setOff();
 };

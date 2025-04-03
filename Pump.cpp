@@ -7,7 +7,7 @@ Pump::Pump(const Sensor& sensorRef,
            const ActuatorHysteresis& benchHyst,
            const ActuatorCurve& benchCurve,
            unsigned long kickstartDuration,
-           int kickstartPWM)
+           uint8_t kickstartPWM)
 : Actuator(sensorRef,  // Basisklassen-Konstruktor
            pwmPin,
            normalHyst,
