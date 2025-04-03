@@ -96,10 +96,9 @@ Ein mögliches Layout (Arduino IDE / PlatformIO):
 
 1. **Arduino IDE** oder PlatformIO installieren.  
 2. Alle `.h`/`.cpp`‐Dateien in einen Projektordner kopieren.  
-3. In der **Hauptdatei** `Pumpensteuerung.ino` sicherstellen, dass Board/Port korrekt gewählt sind.  
+3. In der **Hauptdatei** `arducool.ino` sicherstellen, dass Board/Port korrekt gewählt sind.  
 4. Kompilieren und hochladen.  
-5. **Hardware** gemäß obiger Pinbelegung anschließen.  
-6. **Hauptschalter** auf ON → System misst Temperatur & regelt Pumpen/Lüfter.  
+5. **Hardware** gemäß obiger Pinbelegung anschließen.    
 7. **Benchmark‐Taster** drücken → Modus wechselt, LED geht an/aus; steilere Kennlinien und andere Hysterese greifen.
 
 ---
