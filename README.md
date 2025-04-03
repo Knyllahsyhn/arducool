@@ -27,9 +27,7 @@ In diesem Projekt wird ein Arduino Nano (oder ein vergleichbarer ATmega328p‐ba
 
 ## Projektstruktur
 
-Ein möglicher Aufbau der Dateien (Arduino‐typisch):
-
-
+//kommt noch
 
 
 
@@ -79,9 +77,6 @@ Ein möglicher Aufbau der Dateien (Arduino‐typisch):
    - Erhöht z.B. bei den Pumpen das PWM‐Maximum (z.B. von 50% auf 90%).  
    - Onboard-LED (Pin 13) zeigt an, ob Benchmarkmodus **aktiv** ist.
 
-6. **Hauptschalter**  
-   - Schaltet das gesamte System ab (alle PWM = 0).
-
 ---
 
 ## Installation / Kompilierung
@@ -93,8 +88,8 @@ Ein möglicher Aufbau der Dateien (Arduino‐typisch):
 5. **Kompliliere** und **lade hoch**.  
 
 **Wichtig**:  
-- Im Code erwarten wir **5V** Betrieb und `analogRead()` als Spannungsmessung für den NTC. Bei 3.3V‐Systemen müssen ggf. die Formeln und Parameter angepasst werden.  
-- Prüfe in `Sensor.cpp` die Beta‐Konstante und Widerstandswerte (`R_FIXED`, `R0`) für deinen konkreten NTC.
+- Code erwartet **5V** Betrieb und `analogRead()` als Spannungsmessung für den NTC. Bei 3.3V‐Systemen müssen ggf. die Formeln und Parameter angepasst werden.  
+-  In `Sensor.cpp` die Beta‐Konstante und Widerstandswerte (`R_FIXED`, `R0`) fü konkreten NTC anpassen. 
 
 ---
 
@@ -105,19 +100,19 @@ Ein möglicher Aufbau der Dateien (Arduino‐typisch):
    - `mapTemperature(...)` in `Pump.cpp` oder `Fan.cpp` kann Start/End‐Temperaturen und PWM-Min/Max anpassen.
 
 2. **Kickstart**  
-   - Dauer und Kickstart‐PWM sind Konstruktor‐Parameter der `Pump`. Ändere sie für deine Hardware.
+   - Dauer und Kickstart‐PWM sind Konstruktor‐Parameter der `Pump`.Für eigene Hardware anpassen. 
 
 3. **Benchmarkmodus**  
-   - Aktuell werden in `Pump` nur andere Obergrenzen (z.B. 230 statt 128) verwendet. Du kannst auch andere Kennlinien definieren oder den Lüfter im Benchmarkmodus ändern.
+   - Aktuell werden in `Pump` nur andere Obergrenzen (z.B. 230 statt 128) verwendet. Andere Kennlinien möglich.
 
 4. **Frequenz**  
-   - Für 25 kHz verwenden wir `TOP=79` und Prescaler=8. Wenn du mehr PWM‐Auflösung (z.B. TOP=255) brauchst, sinkt die Frequenz entsprechend.
+   - Für 25 kHz verwenden wir `TOP=79` und Prescaler=8. Bei höherer PWM‐Auflösung (z.B. TOP=255) sinkt die Frequenz entsprechend.
 
 5. **Mehr Pumpen**  
    - Einfach weitere `Pump`‐Objekte (z.B. `pump3`) anlegen, Sensor zuweisen, Pin angeben, im Loop aufrufen.
 
 6. **Struktur**  
-   - Du kannst bei Bedarf jede Klasse (`Sensor`, `Pump`, `Fan`) weiter verfeinern (z.B. Vererbung), falls du z.B. gemeinsame Basisklassen für Aktoren möchtest.
+   - Bei Bedarf jede Klasse (`Sensor`, `Pump`, `Fan`) weiter verfeinern (z.B. Vererbung), falls z.B. gemeinsame Basisklassen für Aktoren gewünscht. 
 
 ---
 
