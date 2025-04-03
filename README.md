@@ -83,6 +83,13 @@ Dieses Projekt steuert mithilfe eines Arduino Nano und MOSFETs zwei Pumpen und e
 
 ---
 
+##To do
+
+1. Integration eines I2C-Displays und Ausgabe relevanter Werte
+2. Vernünftige Branching-Strategie anlegen
+3. Code aufräumen
+4. Schönen Schaltplan basteln
+
 ## Lizenz und Haftungsausschluss
 
 GNU GPLv3
@@ -94,7 +101,7 @@ Diese Schaltung und Software ist ein Beispielprojekt. Für Schäden durch unsach
 
 ## Kontakt
 
-Fragen, Vorschläge oder Probleme? Erstelle bitte ein [GitHub Issue](https://github.com/deinNutzername/deinRepo/issues) oder melde dich direkt per E-Mail.  
+Fragen, Vorschläge oder Probleme? Erstelle bitte ein [GitHub Issue](https://github.com/Knyllahsyhn/arducool/issues) oder melde dich direkt per E-Mail.  
 
 Viel Spaß beim Bauen und Experimentieren!
 
