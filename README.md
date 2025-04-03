@@ -113,6 +113,15 @@ Ein mögliches Layout (Arduino IDE / PlatformIO):
 #include "Pump.h"
 #include "Fan.h"
 
+const int sensor1Pin = A0;
+const int sensor2Pin = A1;
+const int pump1Pin   = 9;
+const int pump2Pin   = 10;
+const int fanPin     = 3;
+const int benchmarkButtonPin = 4;
+const int ledPin             = 13;
+
+
 // Taster-Flag
 bool benchmarkMode = false;
 
@@ -142,7 +151,6 @@ Fan fan1(sensor2, 3,
 
 void setup() {
   Serial.begin(9600);
-  pinMode(mainSwitchPin, INPUT_PULLUP);
   pinMode(benchmarkButtonPin, INPUT_PULLUP);
   pinMode(ledPin, OUTPUT);
 
