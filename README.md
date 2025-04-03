@@ -28,7 +28,7 @@ This project uses an Arduino Nano to control two pumps and one fan based on temp
 
 5. **25 kHz PWM** on Pins 9, 10, and 3  
    - Eliminates annoying audible frequencies  
-   - Implemented via direct timer configuration and a helper function `setPWM_25kHz()`
+   - Implemented via timer register manipulation and a helper function `setPWM_25kHz()`
 
 6. **Modular Files**  
    - `Timers.*`: Timer setup for 25 kHz PWM  
