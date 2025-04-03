@@ -95,20 +95,6 @@ void loop() {
     pump1.update(benchmarkMode);
     pump2.update(benchmarkMode);
     fan1.update(benchmarkMode);
-
-    Serial.print(F("Pump1 PWM="));
-    Serial.print(pump1.getCurrentPWM());
-    Serial.print(F("  Pump2 PWM="));
-    Serial.print(pump2.getCurrentPWM());
-    Serial.print(F("  Fan1 PWM="));
-    Serial.print(fan1.getCurrentPWM());
-    Serial.print(F(" T1 = "));
-    Serial.print(sensor1.getTemperature());
-    Serial.print(" BM= ");
-    Serial.print(benchmarkMode);
-    Serial.print(F(" T2 = "));
-    Serial.println(sensor2.getTemperature());
-  }
 }
 
 // Taster
