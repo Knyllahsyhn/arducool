@@ -66,7 +66,7 @@ An example folder layout (Arduino IDE / PlatformIO style):
 7. **SSD1306** 128x64 OLED Display (SCL - A5, SDA - A4)
 
 ![Untitled Sketch_Schaltplan](https://github.com/user-attachments/assets/3d93944c-8488-4729-bf87-16d31e0ad469)
-
+[![IMG-4341.jpg](https://i.postimg.cc/4xChdyvJ/IMG-4341.jpg)](https://postimg.cc/JGqhY1dg)
 ---
 
 ## Workflow / Logic
