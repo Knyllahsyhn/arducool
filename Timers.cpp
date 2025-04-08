@@ -43,7 +43,7 @@ void setPWM_25kHz(uint8_t pin, int value) {
   // Begrenzen
   if (value < 0)   value = 0;
   if (value > 255) value = 255;
-  uint8_t duty = map(value, 0, 255, 0, 79);
+  int duty = map(value, 0, 255, 0, 79);
 
   switch(pin) {
     case 9:
@@ -55,8 +55,7 @@ void setPWM_25kHz(uint8_t pin, int value) {
     case 3:
       OCR2B = duty;
       break;
-    default:
-      // Nicht unterstützt in diesem Setup
+      default:
       break;
   }
 }

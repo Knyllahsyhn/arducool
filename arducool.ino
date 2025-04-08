@@ -6,6 +6,7 @@
 #include "DisplayManager.h"
 
 
+
 const byte benchmarkButtonPin = 4;
 const byte ledPin = 13;
 
@@ -94,6 +95,9 @@ void handleBenchmarkButton() {
 
 void setup() {
   Serial.begin(9600);
+  pinMode(9, OUTPUT);   // für Pump1 (OC1A)
+  pinMode(10, OUTPUT);  // für Pump2 (OC1B)
+  pinMode(3, OUTPUT);   // für Lüfter (OC2B)
   pinMode(benchmarkButtonPin, INPUT_PULLUP);
   pinMode(ledPin, OUTPUT);
     if(!displayMgr.begin()) {
@@ -103,9 +107,6 @@ void setup() {
   initTimers25kHz();
 
   // Alle Kanäle 0
-  pump1.setOff();
-  pump2.setOff();
-  fan1.setOff();
 }
 
 
@@ -120,7 +121,6 @@ void loop() {
     lastDisplayTime = now;
     displayMgr.update(); // Schreibt Sensor/Pump/Fan-Werte aufs OLED
   }
-
 
     sensor1.update();
     sensor2.update();

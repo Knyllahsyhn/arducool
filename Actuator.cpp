@@ -63,7 +63,7 @@ void Actuator::update(bool benchmarkMode) {
   setPWM_25kHz(pin, pwmVal);
 }
 
-uint8_t Actuator::mapTemperature(float T, const ActuatorCurve& curve) {
+int Actuator::mapTemperature(float T, const ActuatorCurve& curve) {
   if (T <= curve.TLow)  return curve.pwmLow;
   if (T >= curve.THigh) return curve.pwmHigh;
   float ratio = (T - curve.TLow) / (curve.THigh - curve.TLow);

@@ -7,8 +7,8 @@
 struct ActuatorCurve {
   float TLow;
   float THigh;
-  uint8_t pwmLow;
-  uint8_t pwmHigh;
+  int pwmLow;
+  int pwmHigh;
 };
 
 struct ActuatorHysteresis {
@@ -31,7 +31,7 @@ public:
   virtual void setOff();
 
   // Getter
-  uint8_t  getCurrentPWM() const { return currentPWM; }
+  int getCurrentPWM() const { return currentPWM; }
   bool isOn()         const { return stateOn;    }
 
 protected:
@@ -47,13 +47,13 @@ protected:
   ActuatorCurve benchCurve;
 
   bool stateOn;     // Ein/Aus
-  uint8_t  currentPWM;  // 0..255
+  int  currentPWM;  // 0..255
 
   // Zeit, wann zuletzt eingeschaltet
   unsigned long lastOnTime;
 
   // Basismethode für lineares Mapping
-  uint8_t mapTemperature(float T, const ActuatorCurve& curve);
+  int mapTemperature(float T, const ActuatorCurve& curve);
 
   // Virtuelle Methode für Post-Processing (z.B. Kickstart)
   virtual void postProcessPWM(int& pwmVal, unsigned long elapsedSinceOn) {}
