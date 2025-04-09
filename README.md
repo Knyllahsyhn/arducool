@@ -22,7 +22,7 @@ Feel free to test it out in the [Wowki](https://wokwi.com/projects/4272333384199
 
 3. **NTC Temperature Sensors**  
    - Beta-coefficient calculation for precise °C reading  
-   - **Exponential smoothing** to reduce noise
+   - **EMA smoothing** to reduce noise
 
 4. **Non-blocking Loop**  
    - Uses `millis()`-based timing instead of `delay()`, allowing other tasks to run concurrently
@@ -41,16 +41,6 @@ Feel free to test it out in the [Wowki](https://wokwi.com/projects/4272333384199
 
 ---
 
-## Project Structure
-
-An example folder layout (Arduino IDE / PlatformIO style):
-
-//tba
-
-
-
-
----
 
 ## Hardware Setup
 
@@ -60,7 +50,7 @@ An example folder layout (Arduino IDE / PlatformIO style):
    - **Pump1** → Pin 9 (OC1A)  
    - **Pump2** → Pin 10 (OC1B)  
    - **Fan** → Pin 3 (OC2B)   
-4. **Benchmark button** on Pin 4 (`INPUT_PULLUP`); toggles the advanced mode.  
+4. **Benchmark button** on Pin 4 (`INPUT_PULLUP`); toggles the second hysteresis and curve set.  
 5. **Onboard LED** (Pin 13) as an indicator for benchmark mode.  
 6. **MOSFET drivers** for pumps and fan.
 7. **SSD1306** 128x64 OLED Display (SCL - A5, SDA - A4)
@@ -75,7 +65,7 @@ An example folder layout (Arduino IDE / PlatformIO style):
    - `initTimers25kHz()` sets Timer1 (Pins 9,10) and Timer2 (Pin 3) to ~25 kHz instead of default Arduino PWM frequencies.
 
 2. **Sensor**  
-   - `Sensor` class reads ADC, converts to Celsius via the Beta equation, and smooths the result with exponential moving average.
+   - `Sensor` class reads ADC, converts to Celsius via the Beta equation and smooths the result with exponential moving average.
 
 3. **`Actuator` Base Class**  
    - Manages two sets of **hysteresis** (normal/benchmark) and two temperature->PWM curves.  
@@ -94,7 +84,7 @@ An example folder layout (Arduino IDE / PlatformIO style):
 
 7. **Non-blocking Loop**  
    - The main `loop()` uses `millis()` checks to call `update()` for sensors and actuators at fixed intervals (e.g., every 500 ms).  
-   - No calls to `delay()` are used, so the system remains responsive.
+   - No calls to `delay()` are used so the system remains responsive.
 
 8. **Memory Optimization**  
    - Large `float` usage from Beta-equation calls can be replaced with simpler approximations if desired.  
