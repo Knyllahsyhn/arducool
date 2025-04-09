@@ -52,11 +52,13 @@ Feel free to test it out in the [Wowki](https://wokwi.com/projects/4272333384199
    - **Fan** → Pin 3 (OC2B)   
 4. **Benchmark button** on Pin 4 (`INPUT_PULLUP`); toggles the second hysteresis and curve set.  
 5. **Onboard LED** (Pin 13) as an indicator for benchmark mode.  
-6. **MOSFET drivers** for pumps and fan.
+6. **N-Channel MOSFET drivers** for pumps and fan.
 7. **SSD1306** 128x64 OLED Display (SCL - A5, SDA - A4)
 
 ![Untitled Sketch_Schaltplan](https://github.com/user-attachments/assets/3d93944c-8488-4729-bf87-16d31e0ad469)
 [![IMG-4341.jpg](https://i.postimg.cc/4xChdyvJ/IMG-4341.jpg)](https://postimg.cc/JGqhY1dg)
+
+Depending on how beefy your MOSFETs are, you could power all sorts of motors with this setup. The **IRLZ44N**s we used in this project are probably overkill but ¯\_(ツ)_/¯ 
 ---
 
 ## Workflow / Logic
