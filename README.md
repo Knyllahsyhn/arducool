@@ -57,8 +57,9 @@ Feel free to test it out in the [Wowki](https://wokwi.com/projects/4272333384199
 
 ![Untitled Sketch_Schaltplan](https://github.com/user-attachments/assets/3d93944c-8488-4729-bf87-16d31e0ad469)
 [![IMG-4341.jpg](https://i.postimg.cc/4xChdyvJ/IMG-4341.jpg)](https://postimg.cc/JGqhY1dg)
+##### Depending on how beefy your MOSFETs are, you could power all sorts of motors with this setup. The **IRLZ44N**s we used in this project are probably overkill but ¯\\_(ツ)_/¯ 
 
-Depending on how beefy your MOSFETs are, you could power all sorts of motors with this setup. The **IRLZ44N**s we used in this project are probably overkill but ¯\_(ツ)_/¯ 
+
 ---
 
 ## Workflow / Logic
