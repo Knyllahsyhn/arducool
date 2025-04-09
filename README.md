@@ -1,7 +1,7 @@
 # Arduino-Based Pump and Fan Controller (OOP, 25 kHz PWM, Separate Hysteresis & Curves for Normal/Benchmark Mode)
 
 This project uses an Arduino Nano to control two pumps and a fan cluster based on temperature measurements. It features separate **hysteresis** thresholds, **temperature-to-PWM curves** (for normal and benchmark modes), and a **kickstart** mechanism for pumps. The PWM outputs run at **25 kHz** to avoid audible noise, and the code is organized in an **object-oriented** manner for easy extensibility.
-Feel free to test it out in the [Wowki](https://wokwi.com/projects/427233338419995649) simulator. 
+Feel free to test it out in the [Wowki](https://wokwi.com/projects/427233338419995649) simulator (**Note:** Due to limitiations in the simulator, PWM output doesn't seem to work with this code (possibly too large). Code has been confirmed working on an actual Arduino Nano though.)
 
 ---
 
