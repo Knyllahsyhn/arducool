@@ -42,8 +42,8 @@ void initTimers25kHz() {
 void setPWM_25kHz(uint8_t pin, int value) {
   // Begrenzen
   if (value < 0)   value = 0;
-  if (value > 255) value = 255;
-  int duty = map(value, 0, 255, 0, 79);
+  if (value > 100) value = 100;
+  int duty = map(value, 0, 100, 0, 79);
 
   switch(pin) {
     case 9:

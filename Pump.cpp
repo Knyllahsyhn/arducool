@@ -25,7 +25,7 @@ Pump::Pump(const Sensor& sensorRef,
  * (je nach Kennlinie) berechnet wurde. Hier können wir
  * den Kickstart übersteuern.
  * 
- * @param pwmVal          [in/out] der bereits berechnete PWM-Wert (0..255)
+ * @param pwmVal          [in/out] der bereits berechnete PWM-Wert (0..100)
  * @param elapsedSinceOn  Zeit in ms seit dem letzten Einschalten
  */
 void Pump::postProcessPWM(int& pwmVal, unsigned long elapsedSinceOn) {
