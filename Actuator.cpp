@@ -56,7 +56,7 @@ void Actuator::update(bool benchmarkMode) {
 
   // Begrenzen
   if (pwmVal < 0)   pwmVal = 0;
-  if (pwmVal > 255) pwmVal = 255;
+  if (pwmVal > 100) pwmVal = 100;
 
   // 5) Speichern & ausgeben
   currentPWM = pwmVal;

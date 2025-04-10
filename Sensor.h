@@ -19,7 +19,6 @@ public:
   Sensor(int analogPin,
          float rFixed,
          float beta,
-         float r0,
          float t0Kelvin,
          float alpha = 0.1f);
 
@@ -33,7 +32,6 @@ private:
   int pin;
   float R_FIXED;
   float B;
-  float R0;
   float T0;
   float alphaFilter;
 

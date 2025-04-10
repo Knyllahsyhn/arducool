@@ -47,7 +47,7 @@ protected:
   ActuatorCurve benchCurve;
 
   bool stateOn;     // Ein/Aus
-  int  currentPWM;  // 0..255
+  int  currentPWM;  // 0..100
 
   // Zeit, wann zuletzt eingeschaltet
   unsigned long lastOnTime;
