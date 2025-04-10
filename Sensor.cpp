@@ -36,15 +36,8 @@ float Sensor::getTemperature() const {
 // Beta-Formel: ADC -> Spannung -> R_NTC -> Kelvin -> °C
 float Sensor::readNTCTemp() {
   int raw = analogRead(pin);
+  float rNtc = R_FIXED * (1023.0 / (float)raw - 1.0); //  float rNtc = R_FIXED / (1023.0 / (float)raw - 1.0) if NTC between GND and fixed R
 
-  const float VCC = 5.0f;
-  float vPin = (raw / 1023.0f) * VCC;
-  if (vPin <= 0.0f || vPin >= (VCC - 0.0001f)) {
-    // Fehler, unplausible Messung
-    return -100.0f;
-  }
-
-  float rNtc = R_FIXED * (vPin / (VCC - vPin));
   rNtc = (1.0f / T0) + (1.0f / B) * log(rNtc / R0);
   float tKelvin = 1.0f / rNtc;
   return (tKelvin - 273.15f);
