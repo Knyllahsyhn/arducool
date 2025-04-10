@@ -51,7 +51,7 @@ Fan fan1(sensor2, 3,
          fanBenchHyst, fanBenchCurve);
 
 // DisplayManager anlegen, mit Verweisen auf Sensoren/Pumpen/Fan
-DisplayManager displayMgr(sensor1, sensor2, pump1, pump2, fan1, 0x3D);
+DisplayManager displayMgr(sensor1, sensor2, pump1, pump2, fan1, 0x3C);
 
 unsigned long lastDisplayTime = 0;
 const unsigned long displayInterval = 1000;
