@@ -128,6 +128,19 @@ void loop() {
     pump1.update(benchmarkMode);
     pump2.update(benchmarkMode);
     fan1.update(benchmarkMode);
+    Serial.print("S1;");
+    Serial.print(sensor1.getTemperature());
+    Serial.print("  |S2;");
+    Serial.print(sensor2.getTemperature());
+    Serial.print("  |P1;");
+    Serial.print(pump1.getCurrentPWM());
+    Serial.print("  |P2;");
+    Serial.print(pump2.getCurrentPWM());
+    Serial.print("  |Fan;");
+    Serial.println(fan1.getCurrentPWM());
+
+
+
 }
 }
 
