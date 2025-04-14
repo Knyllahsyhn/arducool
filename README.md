@@ -1,7 +1,7 @@
-# Arduino-Based Pump and Fan Controller (OOP, 25 kHz PWM, Separate Hysteresis & Curves for Normal/Benchmark Mode)
+# Arduino-Based Pump and Fan Controller for 24V PSU (OOP, 25 kHz PWM, Separate Hysteresis & Curves for Normal/Benchmark Mode)
 
 This project uses an Arduino Nano to control two pumps and a fan cluster based on temperature measurements. It features separate **hysteresis** thresholds, **temperature-to-PWM curves** (for normal and benchmark modes), and a **kickstart** mechanism for pumps. The PWM outputs run at **25 kHz** to avoid audible noise, and the code is organized in an **object-oriented** manner for easy extensibility.
-Feel free to test it out in the [Wowki](https://wokwi.com/projects/427233338419995649) simulator (**Note:** Due to limitiations in the simulator, PWM output doesn't seem to work with this code (possibly too large). Code has been confirmed working on an actual Arduino Nano though.)
+Feel free to test it out in the [Wowki](https://wokwi.com/projects/427233338419995649) simulator (**Note:** Due to limitiations in the simulator, PWM output doesn't seem to work with this code (possibly too large). Code has been confirmed working on an actual Arduino Nano though.) 
 
 ---
 
@@ -44,16 +44,17 @@ Feel free to test it out in the [Wowki](https://wokwi.com/projects/4272333384199
 
 ## Hardware Setup
 
-1. **Arduino Nano** (5V, ATmega328p).  
-2. **10 kΩ NTC sensors** (Beta ~3950) in voltage divider circuits, analog inputs (`A0`, `A1`).  
-3. **PWM outputs** (25 kHz):  
+1. **Arduino Nano** (5V, ATmega328p).
+2. **24V PSU** !!!! During testing, we found 12V to be a little lacking for our pumps and decided to step it up
+3. **10 kΩ NTC sensors** (Beta ~3950) in voltage divider circuits, analog inputs (`A0`, `A1`).  
+4. **PWM outputs** (25 kHz):  
    - **Pump1** → Pin 9 (OC1A)  
    - **Pump2** → Pin 10 (OC1B)  
    - **Fan** → Pin 3 (OC2B)   
-4. **Benchmark button** on Pin 4 (`INPUT_PULLUP`); toggles the second hysteresis and curve set.  
-5. **Onboard LED** (Pin 13) as an indicator for benchmark mode.  
-6. **N-Channel MOSFET drivers** for pumps and fan.
-7. **SSD1306** 128x64 OLED Display (SCL - A5, SDA - A4)
+5. **Benchmark button** on Pin 4 (`INPUT_PULLUP`); toggles the second hysteresis and curve set.  
+6. **Onboard LED** (Pin 13) as an indicator for benchmark mode.  
+7. **N-Channel MOSFET drivers** for pumps and fan.
+8. **SSD1306** 128x64 OLED Display (SCL - A5, SDA - A4)
 
 ![Untitled Sketch_Schaltplan](https://github.com/user-attachments/assets/3d93944c-8488-4729-bf87-16d31e0ad469)
 [![IMG-4341.jpg](https://i.postimg.cc/4xChdyvJ/IMG-4341.jpg)](https://postimg.cc/JGqhY1dg)
