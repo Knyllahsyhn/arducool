@@ -16,7 +16,7 @@ void initTimers25kHz() {
   TCCR1A |= (1 << COM1A1) | (1 << COM1B1);
   // Prescaler=1
   TCCR1B |= (1 << CS10);
-  // TOP=79
+  // TOP=250
   ICR1 = 250;
 
   // -- TIMER2 (Pin 3=OC2B) --
