@@ -16,7 +16,7 @@ ActuatorHysteresis pump1BenchHyst = { 0.0f, 0.0f };
 ActuatorHysteresis pump2NormalHyst = { 20.0f, 15.0f };
 ActuatorHysteresis pump2BenchHyst = { 10.0f, 5.0f };
 
-ActuatorCurve pump1NormalCurve = { 20.0f, 35.0f, 33, 50 }; // {Tlow,Thigh,rpm%_low,rpm%_high}, rpm von 0-100
+ActuatorCurve pump1NormalCurve = { 20.0f, 35.0f, 38, 50 }; // {Tlow,Thigh,rpm%_low,rpm%_high}, rpm von 0-100
 ActuatorCurve pump1BenchCurve = { 20.0f, 30.0f, 50, 75 };
 // Sensoren
 Sensor sensor1(A0, 10000.0f, 3950.0f,298.15f, 0.1f);
@@ -28,7 +28,7 @@ Pump pump1(
   pump1NormalHyst, pump1NormalCurve,
   pump1BenchHyst, pump1BenchCurve,
   2000,  // Kickstart-Dauer
-  100    // Kickstart-PWM
+  100   // Kickstart-PWM
 );
 
 // Pumpe1
@@ -37,10 +37,10 @@ Pump pump2(
   pump2NormalHyst, pump1NormalCurve,
   pump2BenchHyst, pump1BenchCurve,
   2000,  // Kickstart-Dauer
-  255    // Kickstart-PWM
+  100    // Kickstart-PWM
 );
 
-// Lsüfter, der ab Normal 30..25°C off, Benchmark 20..15°C off, etc.
+// Lüfter, der ab Normal 30..25°C off, Benchmark 20..15°C off, etc.
 ActuatorHysteresis fanNormalHyst = { 25.0f, 22.0f };  // EIN>30, AUS<25
 ActuatorHysteresis fanBenchHyst = { 20.0f, 10.0f };   // ...
 ActuatorCurve fanNormalCurve = { 25.0f, 40.0f, 45, 100 };
