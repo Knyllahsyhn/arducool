@@ -11,7 +11,7 @@ void initTimers25kHz() {
   TCCR1A = 0;
   TCCR1B = 0;
   // Phase correct PWM, Mode 8: ICR1=TOP
-  TCCR1B |= (1 << WGM13)
+  TCCR1B |= (1 << WGM13);
   // Non-inverting auf OC1A / OC1B
   TCCR1A |= (1 << COM1A1) | (1 << COM1B1);
   // Prescaler=1
