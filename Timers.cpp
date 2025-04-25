@@ -35,14 +35,12 @@ void initTimers25kHz() {
 
 /*************************************************
  * setPWM_25kHz(pin, value 0..255)
- *   - mapped auf 0..79
- *   - schreibt OCR1A, OCR1B oder OCR2B
  *************************************************/
 void setPWM_25kHz(uint8_t pin, int value) {
   // Begrenzen
   if (value < 0)   value = 0;
   if (value > 100) value = 100;
-  int duty = map(value, 0, 100, 0, 125);
+  int duty = map(value, 0, 100, 0, 255);
 
   switch(pin) {
     case 9:

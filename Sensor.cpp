@@ -20,7 +20,7 @@ void Sensor::update() {
   float rawTemp = readNTCTemp();
   if (firstRun) {
     filteredTemp = rawTemp;
-    firstRun = false;
+    firstRun = false; 
   } else {
     // Exponential Moving Average
     filteredTemp = alphaFilter * rawTemp + (1 - alphaFilter) * filteredTemp;
