@@ -20,9 +20,10 @@ Actuator::Actuator(const Sensor& sensorRef,
 
 void Actuator::update(bool benchmarkMode) {
   // Fail safe: run at full power when the sensor reading is not
-  // trustworthy. This favors overcooling over undercooling.
+  // trustworthy. This favors overcooling over undercooling. Leave
+  // stateOn and lastOnTime untouched, so the hysteresis and kickstart
+  // state machine resumes correctly once the fault clears.
   if (sensor.isFaulted()) {
-    stateOn = true;
     currentPWM = 100;
     setPWM_25kHz(pin, 100);
     return;
