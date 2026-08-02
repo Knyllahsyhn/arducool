@@ -1,147 +1,187 @@
-# Arduino-basierte Pumpen- und Lüftersteuerung
+# Arduino-Pumpen- und Lüftersteuerung für ein 24-V-Netzteil
 
-Dieses Projekt bietet eine flexible, objektorientierte Lösung zur Steuerung von zwei Pumpen und einem Lüfter basierend auf Temperaturmessungen. Mithilfe eines Arduino Nano und 25 kHz PWM werden die Aktoren (Pumpen und Lüfter) präzise geregelt – inklusive separater Hysterese- und Kennlinienparameter für den Normal- und Benchmarkmodus. Zusätzlich zeigt ein I²C-OLED-Display den aktuellen Systemstatus (Temperaturen, PWM-Werte und Benchmarkmodus) an, und ein Taster ermöglicht das Umschalten in den Benchmarkmodus.
+Dieses Projekt steuert zwei Pumpen und einen Lüfter mit einem Arduino Nano.
+Der Controller liest zwei NTC-Temperatursensoren aus und setzt den PWM-Wert
+für jede Pumpe und den Lüfter. Das PWM-Signal läuft mit 25 kHz, dadurch
+erzeugen Pumpen und Lüfter kein hörbares Pfeifen. Der Code kennt zwei
+Einstellungssätze: Normalmodus und Benchmarkmodus. Ein Taster an Pin 4
+schaltet zwischen beiden Modi um.
 
----
-
-## Features
-
-- **Zwei Betriebsmodi:**  
-  - **Normalmodus:** Definierte Ein-/Ausschaltgrenzen und eine lineare Temperatur-zu-PWM-Kennlinie.  
-  - **Benchmarkmodus:** Steilere Kennlinien, geänderte Hysteresegrenzen und höhere PWM-Werte zur Leistungssteigerung.
-
-- **Objektorientierte Architektur:**  
-  - Eine gemeinsame Basisklasse `Actuator` implementiert die grundlegende Logik (Hysterese, Temperatur-Mapping, PWM-Ausgabe).  
-  - Die abgeleiteten Klassen `Pump` und `Fan` fügen spezifische Funktionen hinzu, wie z.B. einen Kickstart für die Pumpen.
-
-- **NTC-Temperatursensoren:**  
-  - Exakte Temperaturmessung über die Beta-Gleichung.  
-  - Exponentielle Glättung (EMA) reduziert Rauschen und sorgt für stabile Werte.
-
-- **25 kHz PWM:**  
-  - Direkt per Timer-Konfiguration (Timer1 für Pins 9/10 und Timer2 für Pin 3) realisiert – verhindert hörbare Pfeifgeräusche.
-
-- **I²C-OLED-Display:**  
-  - Zeigt aktuelle Temperaturen, PWM-Werte und den Benchmarkmodus an.  
-  - Separate Display-Klasse (`DisplayManager`) übernimmt die OLED-Ansteuerung.
-
-- **Taster für Benchmarkumschaltung:**  
-  - Ein Push-Button ermöglicht das Umschalten zwischen Normal- und Benchmarkmodus.  
-  - Eine Onboard-LED (Pin 13) zeigt den aktuellen Benchmarkstatus an.
-
-- **Nicht-blockierende Steuerung:**  
-  - Zeitsteuerung mittels `millis()` statt `delay()`, sodass das System responsiv bleibt und weitere Aufgaben parallel ausgeführt werden können.
+Probiere die [Wokwi-Simulation](https://wokwi.com/projects/427233338419995649) aus.
+Hinweis: Die PWM-Ausgabe funktioniert im Simulator nicht korrekt. Der Code
+funktioniert korrekt auf echter Arduino-Nano-Hardware.
 
 ---
 
-## Projektstruktur
+## Funktionen
 
-Das Projekt ist modular aufgebaut und in mehrere Dateien unterteilt:
+1. **Zwei Betriebsmodi**
+   - Normalmodus: benutzerdefinierte Ein-/Ausschalttemperaturen und PWM-Kurven.
+   - Benchmarkmodus: steilere Kurven, andere Ein-/Ausschalttemperaturen und
+     ein höherer maximaler PWM-Wert.
+   - Ein Taster schaltet den Modus um. Die LED an Pin 13 zeigt den aktuellen
+     Modus: an im Benchmarkmodus, aus im Normalmodus.
 
+2. **Objektorientiertes Design**
+   - Die Basisklasse `Actuator` verwaltet zwei Hysterese-Sätze
+     (Ein-/Ausschalttemperatur) und zwei Temperatur-zu-PWM-Kurven.
+   - `Pump` erweitert `Actuator` um eine Kickstart-Phase, damit der
+     Pumpenmotor bei niedrigem PWM-Wert zuverlässig anläuft.
+   - `Fan` erweitert `Actuator` ohne Kickstart.
 
----
+3. **NTC-Temperatursensoren und Fail-Safe-Verhalten**
+   - Jedes `Sensor`-Objekt rechnet einen rohen ADC-Wert mit der
+     Beta-Formel in eine Temperatur um.
+   - Ein exponentiell gleitender Mittelwert (EMA) glättet den Messwert.
+   - Meldet ein Sensor einen ungültigen Rohwert (offener oder
+     kurzgeschlossener Stromkreis), behält der Sensor seine letzte
+     gültige Temperatur und setzt ein Fehler-Flag.
+   - Die zugehörige Pumpe oder der Lüfter läuft dann mit 100% PWM, bis
+     der Sensor wieder einen gültigen Messwert liefert. Dieses Fail-Safe
+     geht im Fehlerfall vom schlimmsten Fall aus (Überhitzung), da der
+     Controller dem Sensor nicht mehr vertrauen kann.
 
-## Hardware
+4. **Nicht blockierende Hauptschleife**
+   - Die Schleife nutzt `millis()`, um jede Aufgabe zeitlich zu steuern.
+     Der Code ruft kein `delay()` auf, dadurch bleiben alle Aufgaben
+     reaktionsfähig.
 
-- **Arduino Nano** (ATmega328p, 5V)
-- **NTC-Sensoren:**  
-  - 10 kΩ NTC-Sensoren (z.B. Beta ≈ 3950) in einem Spannungsteiler (mit 10 kΩ Festwiderstand) an den analogen Eingängen (A0, A1)
-- **PWM-Ausgänge:**  
-  - **Pumpe1:** Pin 9 (Timer1, OC1A)  
-  - **Pumpe2:** Pin 10 (Timer1, OC1B)  
-  - **Lüfter:** Pin 3 (Timer2, OC2B)
-- **I²C-OLED-Display:**  
-  - Typischerweise 128×64 Pixel, angeschlossen an SDA (A4) und SCL (A5)
-- **Taster:**  
-  - Verbunden mit Pin 4 (INPUT_PULLUP) zum Umschalten des Benchmarkmodus
-- **Hauptschalter:**  
-  - Verbunden mit Pin 2 (INPUT_PULLUP) zur Steuerung des Gesamtsystems
-- **Onboard-LED:**  
-  - Pin 13 als Indikator für den Benchmarkmodus
-- **MOSFETs/Treiber:**  
-  - Zur Ansteuerung der Pumpen und des Lüfters
-![Untitled Sketch_Schaltplan](https://github.com/user-attachments/assets/989c0cc1-698b-4b05-8a85-6b417429d415)
+5. **25-kHz-PWM an den Pins 9, 10 und 3**
+   - `Timers.cpp` stellt Timer1 und Timer2 per direktem Registerzugriff
+     auf 25 kHz ein.
+   - `setPWM_25kHz()` setzt das Tastverhältnis für einen bestimmten Pin.
 
----
+6. **Zentrale Pin-Konfiguration**
+   - `Pins.h` listet jeden vom Sketch verwendeten Pin auf. Ändere deine
+     Verkabelung nur in dieser einen Datei.
 
-## Funktionsweise
+7. **Modulare Dateien**
+   - `Pins.h`: Pin-Zuordnung.
+   - `Timers.*`: Einrichtung der 25-kHz-PWM.
+   - `Sensor.*`: NTC-Auslesung, EMA-Glättung und Fehlererkennung.
+   - `Actuator.*`: Basisklasse für Hysterese, Kurven und Fail-Safe-Verhalten.
+   - `Pump.*` und `Fan.*`: Pumpen-Kickstart und lüfterspezifisches Verhalten.
+   - `DisplayManager.*`: OLED-Ausgabe.
 
-1. **Timer-Konfiguration:**  
-   `initTimers25kHz()` setzt Timer1 (für Pins 9 und 10) und Timer2 (für Pin 3) auf eine PWM-Frequenz von ca. 25 kHz. Dadurch werden die Pumpen und der Lüfter mit einer Frequenz angesteuert, die oberhalb des menschlichen Hörbereichs liegt.
-
-2. **Temperaturmessung:**  
-   Die `Sensor`-Klasse liest den ADC-Wert ein, rechnet ihn mit der Beta-Gleichung in °C um und glättet das Ergebnis mittels EMA.
-
-3. **Aktorensteuerung:**  
-   - Die Basisklasse `Actuator` verwaltet zwei Sätze von Hysteresegrenzen und Temperatur-zu-PWM-Kennlinien für Normal- und Benchmarkmodus.  
-   - Abgeleitete Klassen wie `Pump` fügen einen Kickstart hinzu, der beim Einschalten der Pumpe einen kurzzeitigen hohen PWM-Wert erzwingt.  
-   - Die `Fan`-Klasse übernimmt die Steuerung des Lüfters ohne Kickstart, verwendet aber ebenfalls unterschiedliche Parameter im Benchmarkmodus.
-
-4. **Display:**  
-   Die `DisplayManager`-Klasse steuert das I²C-OLED-Display, zeigt die aktuellen Temperaturen, die PWM-Werte der Pumpen und des Lüfters sowie den Benchmarkmodus an.
-
-5. **Taster & Benchmarkmodus:**  
-   Ein Push-Button schaltet per Toggle den Benchmarkmodus um. Der aktuelle Zustand wird über die Onboard-LED (Pin 13) und auf dem Display angezeigt.
-
-6. **Nicht-blockierende Steuerung:**  
-   Alle Regelzyklen werden mithilfe von `millis()` gesteuert, sodass das System ohne blockierende `delay()`-Aufrufe arbeitet und stets ansprechbar bleibt.
-
----
-
-## Installation & Nutzung
-
-1. **Voraussetzungen:**  
-   - Arduino IDE oder PlatformIO  
-   - Installierte Bibliotheken:  
-     - [Adafruit SSD1306](https://github.com/adafruit/Adafruit_SSD1306)  
-     - [Adafruit GFX](https://github.com/adafruit/Adafruit-GFX-Library)
-
-2. **Projekt herunterladen:**  
-   Klone oder lade dieses Repository herunter und öffne die `arducool.ino` in der Arduino IDE.
-
-3. **Hardware anschließen:**  
-   - Verbinde die NTC-Sensoren mit den analogen Eingängen A0 und A1.  
-   - Schließe die Pumpen an die PWM-Pins 9 und 10 sowie den Lüfter an Pin 3 an.  
-   - Verbinde das OLED-Display mit SDA (A4) und SCL (A5).  
-   - Schließe den Benchmark-Taster an Pin 4 und den Hauptschalter an Pin 2 (beide mit internem Pullup) an.  
-   - Achte auf eine korrekte Spannungsversorgung und Masseverbindungen.
-
-4. **Code kompilieren & hochladen:**  
-   Wähle das richtige Board (Arduino Nano) und den passenden Port, kompilieren und laden den Code hoch.
-
-5. **Betrieb:**  
-   - Schalte das System über den Hauptschalter ein.  
-   - Beobachte die Messwerte und PWM-Werte auf dem OLED-Display.  
-   - Drücke den Benchmark-Taster, um zwischen Normal- und Benchmarkmodus zu wechseln (der Status wird auf der LED und dem Display angezeigt).
+8. **128x64-SSD1306-OLED-Ausgabe**
+   - Das Display zeigt die Temperatur für Sensor 1 und Sensor 2, oder
+     `ERR` bei einem Sensorfehler.
+   - Das Display zeigt den PWM-Wert für Pumpe 1, Pumpe 2 und den Lüfter.
+   - Das Display zeigt den aktuellen Modus (`BM: ON` oder `BM: OFF`).
 
 ---
 
-## Anpassungsmöglichkeiten
+## Hardware-Aufbau
 
-- **Temperaturgrenzen und Kennlinien:**  
-  Ändere die Werte in den Strukturen `ActuatorHysteresis` und `ActuatorCurve` je nach den gewünschten Schaltpunkten und der PWM-Kurve.
+1. Arduino Nano (5 V, ATmega328P).
+2. 24-V-Netzteil. Hinweis: Wir haben zuerst 12 V getestet und für unsere
+   Pumpen als zu schwach befunden, deshalb sind wir auf 24 V gewechselt.
+3. Zwei 10-kΩ-NTC-Sensoren (Beta ≈ 3950) in einem Spannungsteiler, an den
+   analogen Pins `A0` und `A1`.
+4. PWM-Ausgänge mit 25 kHz:
+   - Pumpe 1 → Pin 9 (OC1A)
+   - Pumpe 2 → Pin 10 (OC1B)
+   - Lüfter → Pin 3 (OC2B)
+5. Benchmark-Taster an Pin 4 (`INPUT_PULLUP`). Der Taster schaltet den
+   Hysterese- und Kurvensatz um.
+6. Onboard-LED (Pin 13) als Benchmarkmodus-Anzeige.
+7. N-Kanal-MOSFET-Treiber für die Pumpen und den Lüfter.
+8. 128x64-SSD1306-OLED-Display (SCL → A5, SDA → A4).
 
-- **Kickstart-Parameter für Pumpen:**  
-  Passe die Dauer und den PWM-Wert des Kickstarts in der `Pump`-Klasse an, um den Startvorgang zu optimieren.
+![Schematic](https://github.com/user-attachments/assets/a0198f37-dbb2-4c98-975d-91f54a14b9a9)
+[![Build photo](https://i.postimg.cc/4xChdyvJ/IMG-4341.jpg)](https://postimg.cc/JGqhY1dg)
 
-- **Displaylayout:**  
-  Passe das Layout in der `DisplayManager`-Klasse in `update()` an, um weitere Informationen anzuzeigen oder die Darstellung zu verändern.
+Die MOSFETs bestimmen die Leistungsgrenze für jeden Kanal. Wir haben
+IRLZ44N-MOSFETs verwendet, die mehr Reserve bieten, als diese Pumpen
+brauchen.
 
-- **Speicheroptimierung:**  
-  Reduziere Debug-Ausgaben (verwende das `F()`-Makro) und überprüfe, ob die Floating-Point-Operationen (Beta-Gleichung) oder virtuelle Methoden weiter optimiert werden können, falls Flash/RAM knapp werden.
+---
+
+## Arbeitsweise
+
+1. **Timer-Konfiguration**: `initTimers25kHz()` stellt Timer1 (Pins 9,
+   10) und Timer2 (Pin 3) auf 25 kHz ein.
+2. **Sensorauslesung**: `Sensor::update()` liest den ADC aus, rechnet
+   den Wert mit der Beta-Formel in Grad Celsius um und glättet das
+   Ergebnis mit einem EMA-Filter. Ist der rohe ADC-Wert 0 oder 1023,
+   meldet der Sensor einen Fehler, statt eine neue Temperatur zu
+   berechnen.
+3. **Basisklasse `Actuator`**: `update(bool benchmarkMode)` prüft
+   zuerst das Sensor-Fehler-Flag. Bei einem Fehler läuft der Aktor mit
+   100% PWM. Andernfalls prüft die Funktion die Hysterese, bildet die
+   Temperatur mit der aktiven Kurve auf einen PWM-Wert ab und ruft
+   `postProcessPWM()` auf.
+4. **`Pump`**: `postProcessPWM()` erzwingt für die Kickstart-Dauer
+   einen hohen PWM-Wert, damit der Motor zuverlässig anläuft.
+5. **`Fan`**: nutzt das Verhalten der Basisklasse ohne Kickstart.
+6. **Benchmarkmodus**: Der Taster schaltet `benchmarkMode` um. Das
+   wechselt den aktiven Hysterese- und Kurvensatz und setzt die LED an
+   Pin 13.
+7. **Nicht blockierende Schleife**: `loop()` prüft `millis()` gegen
+   feste Intervalle, um jede Aufgabe auszuführen. Der Code ruft kein
+   `delay()` auf.
+
+---
+
+## Kurzbeispiel (Ausschnitt aus dem Haupt-Sketch)
+
+```cpp
+void loop() {
+  unsigned long now = millis();
+  if ((now - lastControlTime) >= controlInterval) {
+    lastControlTime = now;
+    handleBenchmarkButton();
+
+    if (now - lastDisplayTime >= displayInterval) {
+      lastDisplayTime = now;
+      displayMgr.update(benchmarkMode);
+    }
+
+    sensor1.update();
+    sensor2.update();
+
+    pump1.update(benchmarkMode);
+    pump2.update(benchmarkMode);
+    fan1.update(benchmarkMode);
+  }
+}
+```
+
+---
+
+## Installation
+
+1. Klone dieses Repository oder lade es mit allen `.h`- und
+   `.cpp`-Dateien herunter.
+2. Öffne `arducool.ino` in der Arduino IDE, oder nutze PlatformIO.
+3. Wähle "Arduino Nano" und den passenden COM-Port aus.
+4. Kompiliere den Sketch und lade ihn hoch.
+5. Verdrahte die Hardware wie oben beschrieben (Sensoren,
+   MOSFET-Treiber und so weiter).
+6. Schalte das Board ein. Das System steuert die Pumpen und den
+   Lüfter jetzt anhand der Sensortemperaturen.
+
+---
+
+## Hinweise zum Speicher
+
+Die Beta-Formel nutzt `log()` aus `<math.h>`, das Flash und RAM
+belegt. Brauchst du mehr freien RAM, ersetze die Beta-Formel durch
+eine Lookup-Tabelle. Die Debug-Ausgabe nutzt bereits das `F()`-Makro,
+um Zeichenketten im Flash statt im RAM abzulegen.
 
 ---
 
 ## Lizenz
 
-GPLv3
+GNU GPLv3
 
 ---
 
-## Kontakt
+## Kontakt und Mitwirkung
 
-Falls du Fragen, Vorschläge oder Probleme hast, eröffne bitte ein Issue in diesem Repository oder kontaktiere mich direkt per E-Mail.
+Eröffne ein Issue oder einen Pull Request bei Fragen oder
+Verbesserungsvorschlägen.
 
----
-
-Viel Erfolg und Spaß beim Experimentieren!
+Passe die Beta-Konstante an das Datenblatt deines NTC an, für genaue
+Messwerte.
