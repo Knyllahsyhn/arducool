@@ -1,32 +1,31 @@
 #pragma once
 #include <Arduino.h>
 
-/**
- * Klasse, die die Temperaturmessung per NTC (Beta-Formel)
- * und Glättung (Exponential Moving Average) kapselt.
- */
+// Sensor reads a temperature from an NTC thermistor with the Beta
+// formula, and smooths it with an exponential moving average (EMA).
 class Sensor {
 public:
-  /**
-   * Konstruktor:
-   *  - analogPin: Welchen Pin lesen wir aus? (z.B. A0)
-   *  - rFixed: Widerstand des Festwiderstands im Teiler (z.B. 10000.0)
-   *  - beta: Beta-Koeffizient des NTC (z.B. 3950)
-   *  - r0: NTC-Widerstand bei T0 (z.B. 10000 bei 25°C)
-   *  - t0Kelvin: T0 in Kelvin (z.B. 298.15)
-   *  - alpha: Glättungsfaktor (0..1)
-   */
+  // analogPin: analog input pin (for example A0)
+  // rFixed: fixed resistor value in the voltage divider, in ohm
+  // beta: NTC beta coefficient
+  // t0Kelvin: reference temperature T0, in kelvin (25 C = 298.15 K)
+  // alpha: EMA smoothing factor, 0 to 1
   Sensor(int analogPin,
          float rFixed,
          float beta,
          float t0Kelvin,
          float alpha = 0.1f);
 
-  // Aufrufen, um neue Messung durchzuführen und zu glätten
+  // Read the ADC and update the smoothed temperature.
+  // On an invalid raw reading, this function keeps the last good
+  // value and sets the fault flag instead of computing a new value.
   void update();
 
-  // Liefert die geglättete Temperatur (°C)
+  // Return the smoothed temperature in degrees Celsius.
   float getTemperature() const;
+
+  // Return true if the last update() call found an invalid raw reading.
+  bool isFaulted() const;
 
 private:
   int pin;
@@ -36,8 +35,9 @@ private:
   float alphaFilter;
 
   bool firstRun;
+  bool faulted;
   float filteredTemp;
 
-  // Interne Funktion, die einmal den ADC liest, NTC berechnet und °C zurückgibt
-  float readNTCTemp();
+  // Convert one raw ADC reading (1-1022) to a temperature in Celsius.
+  float computeTempFromRaw(int raw) const;
 };
