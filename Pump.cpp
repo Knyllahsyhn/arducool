@@ -8,7 +8,7 @@ Pump::Pump(const Sensor& sensorRef,
            const ActuatorCurve& benchCurve,
            unsigned long kickstartDuration,
            uint8_t kickstartPWM)
-: Actuator(sensorRef,  // Basisklassen-Konstruktor
+: Actuator(sensorRef,
            pwmPin,
            normalHyst,
            normalCurve,
@@ -19,20 +19,13 @@ Pump::Pump(const Sensor& sensorRef,
 {
 }
 
-/**
- * postProcessPWM() wird von Actuator::update() aufgerufen,
- * nachdem die Hysterese geprüft und ein "linearer" PWM-Wert
- * (je nach Kennlinie) berechnet wurde. Hier können wir
- * den Kickstart übersteuern.
- * 
- * @param pwmVal          [in/out] der bereits berechnete PWM-Wert (0..100)
- * @param elapsedSinceOn  Zeit in ms seit dem letzten Einschalten
- */
+// postProcessPWM() runs after Actuator::update() checks the
+// hysteresis and computes a PWM value from the active curve. While
+// elapsedSinceOn is less than kickTime, this function overrides that
+// value with kickValue. After the kickstart period, pwmVal keeps the
+// value from Actuator::mapTemperature().
 void Pump::postProcessPWM(int& pwmVal, unsigned long elapsedSinceOn) {
-  // Solange die Zeit seit dem Einschalten (elapsedSinceOn) 
-  // kleiner ist als kickTime, erzwingen wir den kickValue
   if (elapsedSinceOn < kickTime) {
-    pwmVal = kickValue; 
+    pwmVal = kickValue;
   }
-  // Danach bleibt pwmVal so, wie Actuator::mapTemperature() ihn ermittelt hat.
 }
