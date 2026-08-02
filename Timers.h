@@ -1,13 +1,10 @@
 #pragma once
 #include <Arduino.h>
 
-/**
- * Initialisiert Timer1 (Pins 9,10) und Timer2 (Pin 3) auf ~25 kHz.
- */
+// Set up Timer1 (pins 9, 10) and Timer2 (pin 3) for 25 kHz PWM.
 void initTimers25kHz();
 
-/**
- * Setzt an Pin 9, 10 oder 3 einen PWM-Wert (0..255).
- * Intern wird auf 0..79 gemappt und ins passende OCR-Register geschrieben.
- */
+// Set the PWM duty cycle on pin 9, 10, or 3.
+// value: 0 to 100 (percent). The function maps this to the timer's
+// 0-250 duty range.
 void setPWM_25kHz(uint8_t pin, int value);
