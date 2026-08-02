@@ -63,9 +63,10 @@ code works correctly on real Arduino Nano hardware.
    - `DisplayManager.*`: OLED output.
 
 8. **128x64 SSD1306 OLED output**
-   - The display shows the temperature (or `ERR` on a sensor fault)
-     for sensor 1 and sensor 2, the PWM value for pump 1, pump 2,
-     and the fan, and the current mode (`BM: ON` or `BM: OFF`).
+   - The display shows the temperature for sensor 1 and sensor 2, or
+     `ERR` on a sensor fault.
+   - The display shows the PWM value for pump 1, pump 2, and the fan.
+   - The display shows the current mode (`BM: ON` or `BM: OFF`).
 
 ---
 
