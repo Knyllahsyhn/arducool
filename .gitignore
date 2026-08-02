@@ -30,3 +30,7 @@
 *.exe
 *.out
 *.app
+
+# Local planning notes (kept on disk, never pushed)
+docs/superpowers/
+.superpowers/
