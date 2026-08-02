@@ -1,5 +1,5 @@
-#include <stdint.h>
 #pragma once
+#include <stdint.h>
 #include <Arduino.h>
 #include "Sensor.h"
 #include "Timers.h"
@@ -16,21 +16,21 @@ struct ActuatorHysteresis {
   float offTemp;
 };
 
+// Actuator drives a pump or a fan from a temperature reading.
+// It selects between a normal-mode and a benchmark-mode hysteresis
+// pair and curve, and fails safe to 100% PWM if its sensor is faulted.
 class Actuator {
 public:
   Actuator(const Sensor& sensorRef,
            uint8_t pwmPin,
-           // Normalmodus
            const ActuatorHysteresis& normalHyst,
            const ActuatorCurve& normalCurve,
-           // Benchmarkmodus
            const ActuatorHysteresis& benchHyst,
            const ActuatorCurve& benchCurve);
 
   virtual void update(bool benchmarkMode);
   virtual void setOff();
 
-  // Getter
   int getCurrentPWM() const { return currentPWM; }
   bool isOn()         const { return stateOn;    }
 
@@ -38,23 +38,22 @@ protected:
   const Sensor& sensor;
   uint8_t pin;
 
-  // Zwei Hysterese-Paare
   ActuatorHysteresis normalHyst;
   ActuatorHysteresis benchHyst;
 
-  // Zwei Kennlinien
   ActuatorCurve normalCurve;
   ActuatorCurve benchCurve;
 
-  bool stateOn;     // Ein/Aus
-  int  currentPWM;  // 0..100
+  bool stateOn;
+  int  currentPWM;    // 0-100
 
-  // Zeit, wann zuletzt eingeschaltet
   unsigned long lastOnTime;
 
-  // Basismethode für lineares Mapping
+  // Map a temperature to a PWM value (0-100) with the given curve.
   int mapTemperature(float T, const ActuatorCurve& curve);
 
-  // Virtuelle Methode für Post-Processing (z.B. Kickstart)
+  // Called after update() computes a PWM value from the curve.
+  // A subclass overrides this to change the value (for example,
+  // Pump uses it for a kickstart period).
   virtual void postProcessPWM(int& pwmVal, unsigned long elapsedSinceOn) {}
 };
