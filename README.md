@@ -56,7 +56,8 @@ Feel free to test it out in the [Wowki](https://wokwi.com/projects/4272333384199
 7. **N-Channel MOSFET drivers** for pumps and fan.
 8. **SSD1306** 128x64 OLED Display (SCL - A5, SDA - A4)
 
-![Untitled Sketch_Schaltplan](https://github.com/user-attachments/assets/a0198f37-dbb2-4c98-975d-91f54a14b9a9)
+<img width="3508" height="2480" alt="image" src="https://github.com/user-attachments/assets/0e7f33cc-6202-49f8-bdaf-31fcc656ab3f" />
+
 [![IMG-4341.jpg](https://i.postimg.cc/4xChdyvJ/IMG-4341.jpg)](https://postimg.cc/JGqhY1dg)
 ##### Depending on how beefy your MOSFETs are, you could power all sorts of motors with this setup. The **IRLZ44N**s we used in this project are probably overkill but ¯\\_(ツ)_/¯ 
 
